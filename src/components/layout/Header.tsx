@@ -9,13 +9,17 @@ import {
   VolumeX,
   Search,
   AlertTriangle,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { BranchSwitcher } from "@/components/layout/BranchSwitcher";
 import { Badge } from "@/components/ui/badge";
+import { useTheme } from "@/components/theme/ThemeProvider";
 
 export function Header({ branchId = "central" }: { branchId?: string }) {
   const [time, setTime] = useState("");
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const { theme, isDark, toggleTheme } = useTheme();
 
   // Reloj hospitalario en vivo (El Salvador / CST)
   useEffect(() => {
@@ -84,6 +88,19 @@ export function Header({ branchId = "central" }: { branchId?: string }) {
             <Volume2 className="h-4 w-4 text-emerald-400" />
           ) : (
             <VolumeX className="h-4 w-4 text-slate-500" />
+          )}
+        </button>
+
+        {/* Toggle Modo Día / Modo Quirófano */}
+        <button
+          onClick={toggleTheme}
+          className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-800 bg-slate-900 text-slate-400 hover:text-white transition-colors cursor-pointer"
+          title={isDark ? "Cambiar a Modo Día (Luz)" : "Cambiar a Modo Quirófano (Oscuro)"}
+        >
+          {isDark ? (
+            <Moon className="h-4 w-4 text-cyan-400" />
+          ) : (
+            <Sun className="h-4 w-4 text-amber-500" />
           )}
         </button>
 

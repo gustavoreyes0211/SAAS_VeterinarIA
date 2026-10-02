@@ -28,6 +28,7 @@ import {
   Tv,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import {
   Tooltip,
   TooltipContent,
@@ -61,7 +62,7 @@ export function CollapsibleSidebar({
   const pathParts = pathname?.split("/").filter(Boolean) || [];
   const activeBranch = pathParts[0] || branchId;
   const [isCollapsed, setIsCollapsed] = useState(initialCollapsed);
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const { theme, isDark, toggleTheme } = useTheme();
 
   // Atajo de teclado global: Ctrl + B para colapsar/expandir
   useEffect(() => {
@@ -413,17 +414,19 @@ export function CollapsibleSidebar({
               {/* Botones de Utilidad */}
               <div className="flex items-center justify-between px-1 text-slate-400">
                 <button
-                  onClick={() => setIsDarkMode(!isDarkMode)}
-                  className="flex items-center gap-1 text-[11px] hover:text-white transition-colors"
+                  type="button"
+                  onClick={toggleTheme}
+                  className="flex items-center gap-1.5 text-[11px] hover:text-white transition-colors cursor-pointer py-1 px-1.5 rounded-lg hover:bg-slate-800/60"
+                  title={isDark ? "Cambiar a Modo Día" : "Cambiar a Modo Quirófano"}
                 >
-                  {isDarkMode ? (
+                  {isDark ? (
                     <>
                       <Moon className="h-3.5 w-3.5 text-cyan-400" />
                       <span>Modo Quirófano</span>
                     </>
                   ) : (
                     <>
-                      <Sun className="h-3.5 w-3.5 text-amber-400" />
+                      <Sun className="h-3.5 w-3.5 text-amber-500" />
                       <span>Modo Día</span>
                     </>
                   )}
@@ -450,6 +453,21 @@ export function CollapsibleSidebar({
                 <TooltipContent side="right">
                   <div className="font-semibold">Dra. Andrea Martínez</div>
                   <div className="text-[11px] text-slate-400">Cirujana Líder • JVPM #4821</div>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={toggleTheme}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                  >
+                    {isDark ? <Moon className="h-4 w-4 text-cyan-400" /> : <Sun className="h-4 w-4 text-amber-500" />}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <span>{isDark ? "Modo Quirófano (Activo)" : "Modo Día (Activo)"}</span>
                 </TooltipContent>
               </Tooltip>
 
