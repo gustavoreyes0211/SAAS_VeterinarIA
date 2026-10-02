@@ -1,0 +1,1573 @@
+// Prisma Schema for VeterinarIA_Next - Multi-Tenant Veterinary Hospital SaaS
+// El Salvador DTE, ICU, Surgery, Lab, PACS DICOM, Triage, Consultorios, Inventario PEPS
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum BranchFacilityType {
+  MAIN_HOSPITAL_24_7
+  AMBULATORY_CLINIC
+  EMERGENCY_POST
+  DIAGNOSTIC_CENTER
+}
+
+enum ClientTaxType {
+  CONSUMIDOR_FINAL
+  CONTRIBUYENTE_CREDITO_FISCAL
+  EXTRANJERO
+}
+
+enum ClientCategoryTag {
+  STANDARD
+  VIP
+  FREQUENT
+  RESCUER_SHELTER
+  DEBTOR
+  HIGH_RISK_CAUTION
+}
+
+enum AnimalGender {
+  MALE_INTACT
+  MALE_NEUTERED
+  FEMALE_INTACT
+  FEMALE_SPAYED
+  UNKNOWN
+}
+
+enum TemperamentAlertType {
+  FRIENDLY
+  FEARFUL_AGGRESSIVE
+  REQUIRES_MUZZLE
+  FRACTIOUS_CAT
+  HIGH_STRESS_CARDIOPATH
+  NO_DOGS_COMPATIBLE
+}
+
+enum VaccineStatus {
+  APPLIED
+  DUE_SOON
+  EXPIRED
+}
+
+enum RoomType {
+  CONSULTATION_GENERAL
+  CONSULTATION_SPECIALTY
+  SURGERY_ROOM
+  ICU_ROOM
+  XRAY_ROOM
+  TRIAGE_ROOM
+  GROOMING_ROOM
+}
+
+enum RoomOperationalStatus {
+  AVAILABLE
+  OCCUPIED
+  CLEANING_STERILIZING
+  MAINTENANCE
+}
+
+enum EmergencyTriageColor {
+  RED_IMMEDIATE
+  ORANGE_VERY_URGENT
+  YELLOW_URGENT
+  GREEN_STANDARD
+  BLUE_NON_URGENT
+}
+
+enum EmergencyClinicalStatus {
+  TRIAGED
+  IN_CRASH_ROOM
+  STABILIZING
+  RECOVERED_TO_CONSULT
+  TRANSFERRED_TO_ICU
+  TRANSFERRED_TO_OR
+  DECEASED
+  DISCHARGED
+}
+
+enum ConsultationType {
+  GENERAL
+  FOLLOW_UP
+  EMERGENCY_TRIAGE
+  VACCINATION_CHECK
+  SPECIALTY
+  TELEMEDICINE
+}
+
+enum ConsentFormType {
+  SURGERY_ANESTHESIA
+  HOSPITALIZATION_ADMISSION
+  HIGH_RISK_PROCEDURE
+  EUTHANASIA_COMPASSIONATE
+}
+
+enum SurgeryStatus {
+  SCHEDULED
+  PRE_OP
+  IN_SURGERY
+  RECOVERY
+  COMPLETED
+  CANCELLED
+}
+
+enum AsaRiskClassification {
+  ASA_I
+  ASA_II
+  ASA_III
+  ASA_IV
+  ASA_V
+  ASA_E
+}
+
+enum MhEnvironmentType {
+  SANDBOX   @map("00")
+  PRODUCTION @map("01")
+}
+
+enum DteDocumentType {
+  FACTURA                @map("01")
+  COMPROBANTE_CRED_FISC  @map("03")
+  NOTA_CREDITO           @map("05")
+  NOTA_DEBITO            @map("06")
+  SUJETO_EXCLUIDO        @map("14")
+}
+
+enum DteTransmissionStatus {
+  DRAFT
+  SIGNED
+  TRANSMITTED
+  RECEIVED
+  REJECTED
+  CONTINGENCY
+}
+
+// ============================================================================
+// 1. TENANTS Y SUCURSALES
+// ============================================================================
+
+model Tenant {
+  id                   String   @id @default(uuid()) @db.Uuid
+  legalName            String   @map("legal_name") @db.VarChar(150)
+  tradeName            String   @map("trade_name") @db.VarChar(150)
+  nit                  String   @db.VarChar(17)
+  nrc                  String   @db.VarChar(20)
+  economicActivityCode String   @map("economic_activity_code") @db.VarChar(10)
+  economicActivityName String   @map("economic_activity_name") @db.VarChar(200)
+  countryCode          String   @default("SV") @map("country_code") @db.Char(2)
+  currencyCode         String   @default("USD") @map("currency_code") @db.Char(3)
+  subdomain            String   @unique @db.VarChar(63)
+  isActive             Boolean  @default(true) @map("is_active")
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  branches             Branch[]
+  posTerminals         PosTerminal[]
+  roles                Role[]
+  userTenants          UserTenant[]
+  userBranchAssignments UserBranchAssignment[]
+  doctorProfiles       DoctorProfile[]
+  doctorSchedules      DoctorSchedule[]
+  clients              Client[]
+  clientPortalAccesses ClientPortalAccess[]
+  breeds               Breed[]
+  patients             Patient[]
+  patientCoOwners      PatientCoOwner[]
+  weightHistories      PatientWeightHistory[]
+  vaccinations         VaccinationRecord[]
+  dewormings           DewormingRecord[]
+  antiparasitics       AntiparasiticRecord[]
+  rooms                Room[]
+  roomReservations     RoomReservation[]
+  emergencyTriages     EmergencyTriage[]
+  consultations        Consultation[]
+  consultationAddendums ConsultationAddendum[]
+  prescriptions        Prescription[]
+  prescriptionItems    PrescriptionItem[]
+  consentForms         DigitalConsentForm[]
+  surgeries            Surgery[]
+  surgeryAnesthesiaLogs SurgeryAnesthesiaLog[]
+  labOrders            LabOrder[]
+  labTestResults       LabTestResult[]
+  imagingStudies       ImagingStudy[]
+  hospitalizations     Hospitalization[]
+  hospitalizationOrders HospitalizationOrder[]
+  flowboardExecutions  FlowboardExecution[]
+  groomingSessions     GroomingSession[]
+  suppliers            Supplier[]
+  inventoryCategories  InventoryCategory[]
+  inventoryItems       InventoryItem[]
+  inventoryStocks      InventoryStock[]
+  inventoryLots        InventoryLot[]
+  openVials            PharmacyOpenVial[]
+  purchaseOrders       PurchaseOrder[]
+  purchaseOrderItems   PurchaseOrderItem[]
+  inventoryAdjustments InventoryAdjustment[]
+  inventoryTransfers   InventoryTransfer[]
+  inventoryTransferItems InventoryTransferItem[]
+  dteConfig            TenantDteConfig?
+  dteInvoices          DteInvoice[]
+  dteInvoiceItems      DteInvoiceItem[]
+
+  @@map("tenants")
+}
+
+model Branch {
+  id                        String             @id @default(uuid()) @db.Uuid
+  tenantId                  String             @map("tenant_id") @db.Uuid
+  parentBranchId            String?            @map("parent_branch_id") @db.Uuid
+  name                      String             @db.VarChar(100)
+  code                      String             @db.VarChar(10)
+  facilityType              BranchFacilityType @default(MAIN_HOSPITAL_24_7) @map("facility_type")
+  address                   String             @db.Text
+  departmentCode            String             @default("06") @map("department_code") @db.Char(2)
+  municipalityCode          String             @default("14") @map("municipality_code") @db.Char(2)
+  establishmentCodeMh       String             @default("M001") @map("establishment_code_mh") @db.VarChar(4)
+  phoneE164                 String             @map("phone_e164") @db.VarChar(20)
+  emailContact              String             @map("email_contact") @db.VarChar(255)
+  timezone                  String             @default("America/El_Salvador") @db.VarChar(50)
+  hospitalizationCapacity   Int                @default(0) @map("hospitalization_capacity")
+  icuCapacity               Int                @default(0) @map("icu_capacity")
+  hasSurgeryRoom            Boolean            @default(true) @map("has_surgery_room")
+  hasGroomingSalon          Boolean            @default(true) @map("has_grooming_salon")
+  hasXrayImaging            Boolean            @default(true) @map("has_xray_imaging")
+  hasLabFacility            Boolean            @default(true) @map("has_lab_facility")
+  hasEmergencyService247    Boolean            @default(true) @map("has_emergency_service_24_7")
+  isActive                  Boolean            @default(true) @map("is_active")
+  createdAt                 DateTime           @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant                    Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  parentBranch              Branch?            @relation("BranchHierarchy", fields: [parentBranchId], references: [id], onDelete: SetNull)
+  childBranches             Branch[]           @relation("BranchHierarchy")
+  posTerminals              PosTerminal[]
+  userBranchAssignments     UserBranchAssignment[]
+  doctorSchedules           DoctorSchedule[]
+  weightHistories           PatientWeightHistory[]
+  vaccinations              VaccinationRecord[]
+  dewormings                DewormingRecord[]
+  antiparasitics            AntiparasiticRecord[]
+  rooms                     Room[]
+  roomReservations          RoomReservation[]
+  emergencyTriages          EmergencyTriage[]
+  consultations             Consultation[]
+  prescriptions             Prescription[]
+  consentForms              DigitalConsentForm[]
+  surgeries                 Surgery[]
+  labOrders                 LabOrder[]
+  imagingStudies            ImagingStudy[]
+  hospitalizations          Hospitalization[]
+  groomingSessions          GroomingSession[]
+  inventoryStocks           InventoryStock[]
+  inventoryLots             InventoryLot[]
+  openVials                 PharmacyOpenVial[]
+  purchaseOrders            PurchaseOrder[]
+  inventoryAdjustments      InventoryAdjustment[]
+  sourceTransfers           InventoryTransfer[] @relation("SourceBranch")
+  targetTransfers           InventoryTransfer[] @relation("TargetBranch")
+  dteInvoices               DteInvoice[]
+
+  @@unique([tenantId, code])
+  @@unique([tenantId, establishmentCodeMh])
+  @@index([tenantId], name: "idx_branches_tenant")
+  @@map("branches")
+}
+
+model PosTerminal {
+  id           String       @id @default(uuid()) @db.Uuid
+  tenantId     String       @map("tenant_id") @db.Uuid
+  branchId     String       @map("branch_id") @db.Uuid
+  terminalCode String       @default("P001") @map("terminal_code") @db.VarChar(4)
+  name         String       @db.VarChar(50)
+  isActive     Boolean      @default(true) @map("is_active")
+  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch       Branch       @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  dteInvoices  DteInvoice[]
+
+  @@unique([branchId, terminalCode])
+  @@index([tenantId, branchId], name: "idx_pos_terminals_branch")
+  @@map("pos_terminals")
+}
+
+// ============================================================================
+// 2. USUARIOS Y CONTROL DE ACCESO (RBAC)
+// ============================================================================
+
+model User {
+  id                  String       @id @default(uuid()) @db.Uuid
+  email               String       @unique @db.VarChar(255)
+  passwordHash        String       @map("password_hash") @db.VarChar(255)
+  fullName            String       @map("full_name") @db.VarChar(150)
+  phoneE164           String?      @map("phone_e164") @db.VarChar(20)
+  professionalLicense String?      @map("professional_license") @db.VarChar(50)
+  isSuperAdmin        Boolean      @default(false) @map("is_super_admin")
+  isActive            Boolean      @default(true) @map("is_active")
+  createdAt           DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  userTenants         UserTenant[]
+  branchAssignments   UserBranchAssignment[]
+  doctorProfile       DoctorProfile?
+  weightHistories     PatientWeightHistory[]
+  vaccinationsGiven   VaccinationRecord[]
+  dewormingsGiven     DewormingRecord[]
+  antiparasiticsGiven AntiparasiticRecord[]
+  roomsOccupied       Room[]
+  roomReservations    RoomReservation[]
+  triagesEvaluated    EmergencyTriage[]      @relation("TriageEvaluator")
+  triagesAttended     EmergencyTriage[]      @relation("TriageAttendingVet")
+  consultations       Consultation[]         @relation("VetConsultations")
+  consultationAddendums ConsultationAddendum[]
+  prescriptionsWritten Prescription[]
+  leadSurgeries       Surgery[]              @relation("LeadSurgeon")
+  assistedSurgeries   Surgery[]              @relation("Anesthesiologist")
+  labOrdersRequested  LabOrder[]             @relation("LabRequestedBy")
+  imagingPrescribed   ImagingStudy[]         @relation("ImagingPrescribedBy")
+  hospitalizationsAttended Hospitalization[]
+  administeredFlowboard FlowboardExecution[]
+  groomingSessionsAttended GroomingSession[]
+  openVialsCreated    PharmacyOpenVial[]
+  purchaseOrdersCreated PurchaseOrder[]      @relation("PoOrderedBy")
+  purchaseOrdersReceived PurchaseOrder[]     @relation("PoReceivedBy")
+  inventoryAdjustments InventoryAdjustment[]
+  transfersRequested  InventoryTransfer[]    @relation("TransferRequestedBy")
+  transfersSent       InventoryTransfer[]    @relation("TransferSentBy")
+  transfersReceived   InventoryTransfer[]    @relation("TransferReceivedBy")
+
+  @@map("users")
+}
+
+model Role {
+  id                   String             @id @default(uuid()) @db.Uuid
+  tenantId             String?            @map("tenant_id") @db.Uuid
+  name                 String             @db.VarChar(50)
+  isSystemRole         Boolean            @default(false) @map("is_system_role")
+  createdAt            DateTime           @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant               Tenant?            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  rolePermissions      RolePermission[]
+  userTenants          UserTenant[]
+  userBranchAssignments UserBranchAssignment[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id              String           @id @default(uuid()) @db.Uuid
+  code            String           @unique @db.VarChar(100)
+  module          String           @db.VarChar(50)
+  description     String           @db.Text
+
+  rolePermissions RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String     @map("role_id") @db.Uuid
+  permissionId String     @map("permission_id") @db.Uuid
+
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model UserTenant {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  roleId    String   @map("role_id") @db.Uuid
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, tenantId])
+  @@index([tenantId, userId], name: "idx_user_tenants_lookup")
+  @@map("user_tenants")
+}
+
+model UserBranchAssignment {
+  id                String   @id @default(uuid()) @db.Uuid
+  tenantId          String   @map("tenant_id") @db.Uuid
+  userId            String   @map("user_id") @db.Uuid
+  branchId          String   @map("branch_id") @db.Uuid
+  roleId            String?  @map("role_id") @db.Uuid
+  isDefaultBranch   Boolean  @default(false) @map("is_default_branch")
+  canSwitchBranches Boolean  @default(true) @map("can_switch_branches")
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant            Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branch            Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  role              Role?    @relation(fields: [roleId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, branchId])
+  @@index([tenantId, userId, branchId], name: "idx_user_branch_assignments")
+  @@map("user_branch_assignments")
+}
+
+model DoctorProfile {
+  id                              String           @id @default(uuid()) @db.Uuid
+  tenantId                        String           @map("tenant_id") @db.Uuid
+  userId                          String           @unique @map("user_id") @db.Uuid
+  jvpmLicenseNumber               String           @map("jvpm_license_number") @db.VarChar(30)
+  specialties                     String[]         @default([])
+  signatureImageUrl               String?          @map("signature_image_url") @db.Text
+  stampImageUrl                   String?          @map("stamp_image_url") @db.Text
+  isLeadSurgeon                   Boolean          @default(false) @map("is_lead_surgeon")
+  isAnesthesiologist              Boolean          @default(false) @map("is_anesthesiologist")
+  isIntensivistIcu                Boolean          @default(false) @map("is_intensivist_icu")
+  emergencyBreakGlassAuthorized   Boolean          @default(true) @map("emergency_break_glass_authorized")
+  createdAt                       DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                       DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant                          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user                            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schedules                       DoctorSchedule[]
+
+  @@index([tenantId, userId], name: "idx_doctor_profiles_tenant")
+  @@map("doctor_profiles")
+}
+
+model DoctorSchedule {
+  id           String        @id @default(uuid()) @db.Uuid
+  tenantId     String        @map("tenant_id") @db.Uuid
+  doctorId     String        @map("doctor_id") @db.Uuid
+  branchId     String        @map("branch_id") @db.Uuid
+  dayOfWeek    Int           @map("day_of_week") @db.SmallInt // 0=Sun, 6=Sat
+  startTime    String        @map("start_time") @db.VarChar(10) // HH:mm
+  endTime      String        @map("end_time") @db.VarChar(10)   // HH:mm
+  isNightShift Boolean       @default(false) @map("is_night_shift")
+  isActive     Boolean       @default(true) @map("is_active")
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  doctor       DoctorProfile @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  branch       Branch        @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, branchId, dayOfWeek], name: "idx_doctor_schedules_branch")
+  @@map("doctor_schedules")
+}
+
+// ============================================================================
+// 3. CLIENTES (TUTORES) Y PACIENTES (MASCOTAS)
+// ============================================================================
+
+model Client {
+  id                            String             @id @default(uuid()) @db.Uuid
+  tenantId                      String             @map("tenant_id") @db.Uuid
+  firstName                     String             @map("first_name") @db.VarChar(100)
+  lastName                      String             @map("last_name") @db.VarChar(100)
+  taxType                       ClientTaxType      @default(CONSUMIDOR_FINAL) @map("tax_type")
+  category                      ClientCategoryTag  @default(STANDARD)
+  dui                           String?            @db.VarChar(10)
+  nit                           String?            @db.VarChar(17)
+  nrc                           String?            @db.VarChar(20)
+  economicActivityCode          String?            @map("economic_activity_code") @db.VarChar(10)
+  tradeName                     String?            @map("trade_name") @db.VarChar(150)
+  phoneE164                     String             @map("phone_e164") @db.VarChar(20)
+  secondaryPhone                String?            @map("secondary_phone") @db.VarChar(20)
+  email                         String             @db.VarChar(255)
+  address                       String             @db.Text
+  departmentCode                String             @default("06") @map("department_code") @db.Char(2)
+  municipalityCode              String             @default("14") @map("municipality_code") @db.Char(2)
+  emergencyContactName          String?            @map("emergency_contact_name") @db.VarChar(100)
+  emergencyContactPhone         String?            @map("emergency_contact_phone") @db.VarChar(20)
+  emergencyContactRelationship  String?            @map("emergency_contact_relationship") @db.VarChar(50)
+  currentBalance                Decimal            @default(0.00) @map("current_balance") @db.Decimal(10, 2)
+  creditLimit                   Decimal            @default(0.00) @map("credit_limit") @db.Decimal(10, 2)
+  internalNotes                 String?            @map("internal_notes") @db.Text
+  isActive                      Boolean            @default(true) @map("is_active")
+  createdAt                     DateTime           @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                     DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant                        Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  portalAccess                  ClientPortalAccess?
+  patients                      Patient[]
+  coOwnedPatients               PatientCoOwner[]
+  emergencyTriages              EmergencyTriage[]
+  consentForms                  DigitalConsentForm[]
+  groomingSessions              GroomingSession[]
+  dteInvoices                   DteInvoice[]
+
+  @@index([tenantId, phoneE164], name: "idx_clients_phone")
+  @@index([tenantId, lastName, firstName], name: "idx_clients_name")
+  @@index([tenantId, dui], name: "idx_clients_dui")
+  @@map("clients")
+}
+
+model ClientPortalAccess {
+  id                  String    @id @default(uuid()) @db.Uuid
+  tenantId            String    @map("tenant_id") @db.Uuid
+  clientId            String    @unique @map("client_id") @db.Uuid
+  magicLinkTokenHash  String?   @map("magic_link_token_hash") @db.VarChar(255)
+  tokenExpiresAt      DateTime? @map("token_expires_at") @db.Timestamptz
+  lastLoginAt         DateTime? @map("last_login_at") @db.Timestamptz
+  lastLoginIp         String?   @map("last_login_ip") @db.VarChar(45)
+  isPortalActive      Boolean   @default(true) @map("is_portal_active")
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant              Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  client              Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@map("client_portal_access")
+}
+
+model Breed {
+  id                   String    @id @default(uuid()) @db.Uuid
+  tenantId             String?   @map("tenant_id") @db.Uuid
+  species              String    @db.VarChar(50)
+  name                 String    @db.VarChar(100)
+  standardWeightMaleKg Decimal?  @map("standard_weight_male_kg") @db.Decimal(6, 3)
+  standardWeightFemKg  Decimal?  @map("standard_weight_female_kg") @db.Decimal(6, 3)
+  predispositions      String[]  @default([])
+  isSystemStandard     Boolean   @default(true) @map("is_system_standard")
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant               Tenant?   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  patients             Patient[]
+
+  @@index([species, name], name: "idx_breeds_species")
+  @@map("breeds")
+}
+
+model Patient {
+  id                  String               @id @default(uuid()) @db.Uuid
+  tenantId            String               @map("tenant_id") @db.Uuid
+  clientId            String               @map("client_id") @db.Uuid
+  breedId             String?              @map("breed_id") @db.Uuid
+  name                String               @db.VarChar(100)
+  species             String               @default("CANINE") @db.VarChar(50)
+  breed               String?              @db.VarChar(100)
+  gender              AnimalGender         @default(UNKNOWN)
+  birthDate           DateTime?            @map("birth_date") @db.Date
+  estimatedAgeMonths  Int?                 @map("estimated_age_months")
+  microchipNumber     String?              @map("microchip_number") @db.VarChar(50)
+  tattooNumber        String?              @map("tattoo_number") @db.VarChar(50)
+  avatarUrl           String?              @map("avatar_url") @db.Text
+  coatColor           String?              @map("coat_color") @db.VarChar(100)
+  distinctiveMarkings String?              @map("distinctive_markings") @db.Text
+  bloodType           String?              @map("blood_type") @db.VarChar(20)
+  temperamentAlert    TemperamentAlertType @default(FRIENDLY) @map("temperament_alert")
+  knownAllergies      String[]             @default([]) @map("known_allergies")
+  chronicConditions   String[]             @default([]) @map("chronic_conditions")
+  isDeceased          Boolean              @default(false) @map("is_deceased")
+  deceasedAt          DateTime?            @map("deceased_at") @db.Timestamptz
+  deceasedReason      String?              @map("deceased_reason") @db.Text
+  isActive            Boolean              @default(true) @map("is_active")
+  createdAt           DateTime             @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant              Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  client              Client               @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  breedRelation       Breed?               @relation(fields: [breedId], references: [id], onDelete: SetNull)
+  coOwners            PatientCoOwner[]
+  weightHistories     PatientWeightHistory[]
+  vaccinations        VaccinationRecord[]
+  dewormings          DewormingRecord[]
+  antiparasitics      AntiparasiticRecord[]
+  roomsOccupied       Room[]
+  roomReservations    RoomReservation[]
+  emergencyTriages    EmergencyTriage[]
+  consultations       Consultation[]
+  prescriptions       Prescription[]
+  consentForms        DigitalConsentForm[]
+  surgeries           Surgery[]
+  labOrders           LabOrder[]
+  imagingStudies      ImagingStudy[]
+  hospitalizations    Hospitalization[]
+  groomingSessions    GroomingSession[]
+  dteInvoices         DteInvoice[]
+
+  @@index([tenantId, clientId], name: "idx_patients_client")
+  @@index([tenantId, microchipNumber], name: "idx_patients_microchip")
+  @@index([tenantId, name], name: "idx_patients_name")
+  @@map("patients")
+}
+
+model PatientCoOwner {
+  id                         String   @id @default(uuid()) @db.Uuid
+  tenantId                   String   @map("tenant_id") @db.Uuid
+  patientId                  String   @map("patient_id") @db.Uuid
+  clientId                   String   @map("client_id") @db.Uuid
+  relationshipType           String   @default("CO_OWNER") @map("relationship_type") @db.VarChar(50)
+  isAuthorizedToSignConsent  Boolean  @default(true) @map("is_authorized_to_sign_consent")
+  isAuthorizedToPickUp       Boolean  @default(true) @map("is_authorized_to_pick_up")
+  createdAt                  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant                     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  patient                    Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  client                     Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([patientId, clientId])
+  @@index([tenantId, clientId, patientId], name: "idx_co_owners_lookup")
+  @@map("patient_co_owners")
+}
+
+model PatientWeightHistory {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  patientId       String   @map("patient_id") @db.Uuid
+  branchId        String?  @map("branch_id") @db.Uuid
+  weightKg        Decimal  @map("weight_kg") @db.Decimal(6, 3)
+  recordedByUserId String? @map("recorded_by_user_id") @db.Uuid
+  recordedAt      DateTime @default(now()) @map("recorded_at") @db.Timestamptz
+
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  patient         Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  branch          Branch?  @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  recordedBy      User?    @relation(fields: [recordedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([patientId, recordedAt(sort: Desc)], name: "idx_weight_history_patient")
+  @@map("patient_weight_history")
+}
+
+model VaccinationRecord {
+  id               String        @id @default(uuid()) @db.Uuid
+  tenantId         String        @map("tenant_id") @db.Uuid
+  branchId         String        @map("branch_id") @db.Uuid
+  patientId        String        @map("patient_id") @db.Uuid
+  vaccineName      String        @map("vaccine_name") @db.VarChar(150)
+  lotNumber        String?       @map("lot_number") @db.VarChar(50)
+  administeredAt   DateTime      @map("administered_at") @db.Date
+  nextDueDate      DateTime      @map("next_due_date") @db.Date
+  status           VaccineStatus @default(APPLIED)
+  veterinarianId   String?       @map("veterinarian_id") @db.Uuid
+  notes            String?       @db.Text
+  createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant           Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch           Branch        @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  patient          Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  veterinarian     User?         @relation(fields: [veterinarianId], references: [id], onDelete: SetNull)
+
+  @@index([patientId, nextDueDate], name: "idx_vaccinations_patient")
+  @@map("vaccination_records")
+}
+
+model DewormingRecord {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @map("tenant_id") @db.Uuid
+  branchId       String   @map("branch_id") @db.Uuid
+  patientId      String   @map("patient_id") @db.Uuid
+  productName    String   @map("product_name") @db.VarChar(150)
+  type           String   @default("INTERNAL") @db.VarChar(20)
+  administeredAt DateTime @map("administered_at") @db.Date
+  nextDueDate    DateTime @map("next_due_date") @db.Date
+  veterinarianId String?  @map("veterinarian_id") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant         Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch         Branch   @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  patient        Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  veterinarian   User?    @relation(fields: [veterinarianId], references: [id], onDelete: SetNull)
+
+  @@map("deworming_records")
+}
+
+model AntiparasiticRecord {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  branchId        String   @map("branch_id") @db.Uuid
+  patientId       String   @map("patient_id") @db.Uuid
+  productName     String   @map("product_name") @db.VarChar(150)
+  targetParasites String   @default("FLEAS_TICKS") @map("target_parasites") @db.VarChar(50)
+  administeredAt  DateTime @map("administered_at") @db.Date
+  nextDueDate     DateTime @map("next_due_date") @db.Date
+  veterinarianId  String?  @map("veterinarian_id") @db.Uuid
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch          Branch   @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  patient         Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  veterinarian    User?    @relation(fields: [veterinarianId], references: [id], onDelete: SetNull)
+
+  @@index([patientId, nextDueDate], name: "idx_antiparasitic_patient")
+  @@map("antiparasitic_records")
+}
+
+// ============================================================================
+// 4. CONSULTORIOS Y SALAS FÍSICAS (ROOMS)
+// ============================================================================
+
+model Room {
+  id                  String                @id @default(uuid()) @db.Uuid
+  tenantId            String                @map("tenant_id") @db.Uuid
+  branchId            String                @map("branch_id") @db.Uuid
+  name                String                @db.VarChar(100)
+  code                String                @db.VarChar(20)
+  roomType            RoomType              @default(CONSULTATION_GENERAL) @map("room_type")
+  status              RoomOperationalStatus @default(AVAILABLE)
+  currentDoctorUserId String?               @map("current_doctor_user_id") @db.Uuid
+  currentPatientId    String?               @map("current_patient_id") @db.Uuid
+  equipmentList       Json                  @default("[]") @map("equipment_list")
+  displayOrder        Int                   @default(1) @map("display_order")
+  isActive            Boolean               @default(true) @map("is_active")
+  createdAt           DateTime              @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime              @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant              Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch              Branch                @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  currentDoctor       User?                 @relation(fields: [currentDoctorUserId], references: [id], onDelete: SetNull)
+  currentPatient      Patient?              @relation(fields: [currentPatientId], references: [id], onDelete: SetNull)
+  reservations        RoomReservation[]
+  emergencyTriages    EmergencyTriage[]
+  consultations       Consultation[]
+  surgeries           Surgery[]
+  groomingSessions    GroomingSession[]
+
+  @@unique([branchId, code])
+  @@index([tenantId, branchId, status], name: "idx_rooms_branch_status")
+  @@map("rooms")
+}
+
+model RoomReservation {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  branchId        String   @map("branch_id") @db.Uuid
+  roomId          String   @map("room_id") @db.Uuid
+  reservedByUserId String  @map("reserved_by_user_id") @db.Uuid
+  patientId       String?  @map("patient_id") @db.Uuid
+  purpose         String   @db.VarChar(150)
+  startTime       DateTime @map("start_time") @db.Timestamptz
+  endTime         DateTime @map("end_time") @db.Timestamptz
+  status          String   @default("CONFIRMED") @db.VarChar(20)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch          Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  room            Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  reservedBy      User     @relation(fields: [reservedByUserId], references: [id], onDelete: Restrict)
+  patient         Patient? @relation(fields: [patientId], references: [id], onDelete: SetNull)
+
+  @@index([roomId, startTime, endTime], name: "idx_room_reservations_time")
+  @@map("room_reservations")
+}
+
+// ============================================================================
+// 5. EMERGENCIAS Y TRIAJE VECCS / RECOVER
+// ============================================================================
+
+model EmergencyTriage {
+  id                     String                  @id @default(uuid()) @db.Uuid
+  tenantId               String                  @map("tenant_id") @db.Uuid
+  branchId               String                  @map("branch_id") @db.Uuid
+  patientId              String?                 @map("patient_id") @db.Uuid
+  clientId               String?                 @map("client_id") @db.Uuid
+  evaluatedByUserId      String                  @map("evaluated_by_user_id") @db.Uuid
+  attendingVetId         String?                 @map("attending_vet_id") @db.Uuid
+  triageColor            EmergencyTriageColor    @default(YELLOW_URGENT) @map("triage_color")
+  clinicalStatus         EmergencyClinicalStatus @default(TRIAGED) @map("clinical_status")
+  chiefComplaint         String                  @map("chief_complaint") @db.Text
+  estimatedOrFastWeightKg Decimal                @map("estimated_or_fast_weight_kg") @db.Decimal(6, 3)
+  airwayStatus           String                  @default("PATENT") @map("airway_status") @db.VarChar(30)
+  breathingEffort        String                  @default("NORMAL") @map("breathing_effort") @db.VarChar(30)
+  circulationPulse       String                  @default("STRONG") @map("circulation_pulse") @db.VarChar(30)
+  capillaryRefillSeconds Decimal?                @map("capillary_refill_seconds") @db.Decimal(3, 1)
+  mucousColor            String                  @default("PINK") @map("mucous_color") @db.VarChar(30)
+  mentalStatus           String                  @default("ALERT") @map("mental_status") @db.VarChar(30)
+  tempCelsius            Decimal?                @map("temp_celsius") @db.Decimal(4, 2)
+  heartRateBpm           Int?                    @map("heart_rate_bpm")
+  respiratoryRateBpm     Int?                    @map("respiratory_rate_bpm")
+  spo2Percent            Decimal?                @map("spo2_percent") @db.Decimal(4, 1)
+  systolicBp             Int?                    @map("systolic_bp")
+  glucoseMgDl            Int?                    @map("glucose_mg_dl")
+  lactateMmolL           Decimal?                @map("lactate_mmol_l") @db.Decimal(4, 2)
+  crashCartDosagesJson   Json?                   @map("crash_cart_dosages_json")
+  assignedShockTable     String?                 @map("assigned_shock_table") @db.VarChar(30)
+  assignedRoomId         String?                 @map("assigned_room_id") @db.Uuid
+  isCodeRedBroadcasted   Boolean                 @default(false) @map("is_code_red_broadcasted")
+  admittedAt             DateTime                @default(now()) @map("admitted_at") @db.Timestamptz
+  attendedAt             DateTime?               @map("attended_at") @db.Timestamptz
+  stabilizedAt           DateTime?               @map("stabilized_at") @db.Timestamptz
+  createdAt              DateTime                @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant                 Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch                 Branch                  @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  patient                Patient?                @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  client                 Client?                 @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  evaluatedBy            User                    @relation("TriageEvaluator", fields: [evaluatedByUserId], references: [id], onDelete: Restrict)
+  attendingVet           User?                   @relation("TriageAttendingVet", fields: [attendingVetId], references: [id], onDelete: SetNull)
+  assignedRoom           Room?                   @relation(fields: [assignedRoomId], references: [id], onDelete: SetNull)
+  consultations          Consultation[]
+  prescriptions          Prescription[]
+  surgeries              Surgery[]
+  labOrders              LabOrder[]
+  imagingStudies         ImagingStudy[]
+  hospitalizations       Hospitalization[]
+  dteInvoices            DteInvoice[]
+
+  @@index([tenantId, branchId, triageColor, clinicalStatus], name: "idx_emergency_triage_active")
+  @@map("emergency_triages")
+}
+
+// ============================================================================
+// 6. CONSULTAS CLÍNICAS (SOAP AAHA) Y RECETAS
+// ============================================================================
+
+model Consultation {
+  id                       String               @id @default(uuid()) @db.Uuid
+  tenantId                 String               @map("tenant_id") @db.Uuid
+  branchId                 String               @map("branch_id") @db.Uuid
+  patientId                String               @map("patient_id") @db.Uuid
+  veterinarianId           String               @map("veterinarian_id") @db.Uuid
+  roomId                   String?              @map("room_id") @db.Uuid
+  turnId                   String?              @map("turn_id") @db.Uuid
+  emergencyTriageId        String?              @map("emergency_triage_id") @db.Uuid
+  consultationType         ConsultationType     @default(GENERAL) @map("consultation_type")
+  consultationDate         DateTime             @default(now()) @map("consultation_date") @db.Timestamptz
+  anamnesisReason          String               @map("anamnesis_reason") @db.Text
+  currentDiet              String?              @map("current_diet") @db.Text
+  currentMedications       String?              @map("current_medications") @db.Text
+  weightKg                 Decimal              @map("weight_kg") @db.Decimal(6, 3)
+  tempCelsius              Decimal?             @map("temp_celsius") @db.Decimal(4, 2)
+  heartRateBpm             Int?                 @map("heart_rate_bpm")
+  respiratoryRateBpm       Int?                 @map("respiratory_rate_bpm")
+  systolicBp               Int?                 @map("systolic_bp")
+  capillaryRefillSeconds   Decimal?             @map("capillary_refill_seconds") @db.Decimal(3, 1)
+  mucousMembraneStatus     String?              @default("PINK") @map("mucous_membrane_status") @db.VarChar(30)
+  hydrationPercentage      Decimal?             @default(0.0) @map("hydration_percentage") @db.Decimal(3, 1)
+  bodyConditionScore       Int?                 @map("body_condition_score")
+  painScaleScore           Int?                 @map("pain_scale_score")
+  physicalExamSystems      Json                 @default("{}") @map("physical_exam_systems")
+  subjective               String               @db.Text
+  objective                String               @db.Text
+  assessmentDiagnosis      String               @map("assessment_diagnosis") @db.Text
+  differentialDiagnoses    String[]             @default([]) @map("differential_diagnoses")
+  planTherapeuticSummary   String               @map("plan_therapeutic_summary") @db.Text
+  requiresHospitalization  Boolean              @default(false) @map("requires_hospitalization")
+  requiresSurgery          Boolean              @default(false) @map("requires_surgery")
+  requiresLabTests         Boolean              @default(false) @map("requires_lab_tests")
+  requiresImaging          Boolean              @default(false) @map("requires_imaging")
+  isClosed                 Boolean              @default(false) @map("is_closed")
+  closedAt                 DateTime?            @map("closed_at") @db.Timestamptz
+  createdAt                DateTime             @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant                   Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch                   Branch               @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  patient                  Patient              @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  veterinarian             User                 @relation("VetConsultations", fields: [veterinarianId], references: [id], onDelete: Restrict)
+  room                     Room?                @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  emergencyTriage          EmergencyTriage?     @relation(fields: [emergencyTriageId], references: [id], onDelete: SetNull)
+  addendums                ConsultationAddendum[]
+  prescriptions            Prescription[]
+  surgeries                Surgery[]
+  labOrders                LabOrder[]
+  imagingStudies           ImagingStudy[]
+  hospitalizations         Hospitalization[]
+  dteInvoices              DteInvoice[]
+
+  @@index([tenantId, patientId, consultationDate(sort: Desc)], name: "idx_consultations_patient")
+  @@map("consultations")
+}
+
+model ConsultationAddendum {
+  id             String       @id @default(uuid()) @db.Uuid
+  tenantId       String       @map("tenant_id") @db.Uuid
+  consultationId String       @map("consultation_id") @db.Uuid
+  veterinarianId String       @map("veterinarian_id") @db.Uuid
+  addendumText   String       @map("addendum_text") @db.Text
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant         Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  consultation   Consultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+  veterinarian   User         @relation(fields: [veterinarianId], references: [id], onDelete: Restrict)
+
+  @@map("consultation_addendums")
+}
+
+model Prescription {
+  id                  String             @id @default(uuid()) @db.Uuid
+  tenantId            String             @map("tenant_id") @db.Uuid
+  branchId            String             @map("branch_id") @db.Uuid
+  patientId           String             @map("patient_id") @db.Uuid
+  veterinarianId      String             @map("veterinarian_id") @db.Uuid
+  consultationId      String?            @map("consultation_id") @db.Uuid
+  emergencyTriageId   String?            @map("emergency_triage_id") @db.Uuid
+  prescriptionCode    String             @unique @map("prescription_code") @db.VarChar(30)
+  isControlledNarcotic Boolean            @default(false) @map("is_controlled_narcotic")
+  generalIndications  String?            @map("general_indications") @db.Text
+  pdfUrl              String?            @map("pdf_url") @db.Text
+  createdAt           DateTime           @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant              Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch              Branch             @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  patient             Patient            @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  veterinarian        User               @relation(fields: [veterinarianId], references: [id], onDelete: Restrict)
+  consultation        Consultation?      @relation(fields: [consultationId], references: [id], onDelete: SetNull)
+  emergencyTriage     EmergencyTriage?   @relation(fields: [emergencyTriageId], references: [id], onDelete: SetNull)
+  items               PrescriptionItem[]
+
+  @@index([tenantId, patientId, createdAt(sort: Desc)], name: "idx_prescriptions_patient")
+  @@map("prescriptions")
+}
+
+model PrescriptionItem {
+  id                    String       @id @default(uuid()) @db.Uuid
+  tenantId              String       @map("tenant_id") @db.Uuid
+  prescriptionId        String       @map("prescription_id") @db.Uuid
+  medicationName        String       @map("medication_name") @db.VarChar(150)
+  activeIngredient      String?      @map("active_ingredient") @db.VarChar(150)
+  dosageText            String       @map("dosage_text") @db.VarChar(100)
+  routeOfAdministration String       @map("route_of_administration") @db.VarChar(50)
+  frequencyHours        Int          @map("frequency_hours")
+  durationDays          Int          @map("duration_days")
+  quantityToDispense    String       @map("quantity_to_dispense") @db.VarChar(50)
+  specialInstructions   String?      @map("special_instructions") @db.Text
+
+  tenant                Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  prescription          Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+
+  @@map("prescription_items")
+}
+
+// ============================================================================
+// 7. QUIRÓFANO Y CONSENTIMIENTOS DIGITALES
+// ============================================================================
+
+model DigitalConsentForm {
+  id                   String          @id @default(uuid()) @db.Uuid
+  tenantId             String          @map("tenant_id") @db.Uuid
+  branchId             String          @map("branch_id") @db.Uuid
+  clientId             String          @map("client_id") @db.Uuid
+  patientId            String          @map("patient_id") @db.Uuid
+  formType             ConsentFormType @map("form_type")
+  title                String          @db.VarChar(150)
+  termsBodyText        String          @map("terms_body_text") @db.Text
+  initialDepositAmount Decimal?        @default(0.00) @map("initial_deposit_amount") @db.Decimal(10, 2)
+  signerFullName       String          @map("signer_full_name") @db.VarChar(150)
+  signerIdDocument     String          @map("signer_id_document") @db.VarChar(50)
+  signerSignatureSvg   String          @map("signer_signature_svg") @db.Text
+  signedPdfUrl         String?         @map("signed_pdf_url") @db.Text
+  signedAt             DateTime        @default(now()) @map("signed_at") @db.Timestamptz
+  isRevoked            Boolean         @default(false) @map("is_revoked")
+
+  tenant               Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch               Branch          @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  client               Client          @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  patient              Patient         @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  surgeries            Surgery[]
+
+  @@map("digital_consent_forms")
+}
+
+model Surgery {
+  id                      String                @id @default(uuid()) @db.Uuid
+  tenantId                String                @map("tenant_id") @db.Uuid
+  branchId                String                @map("branch_id") @db.Uuid
+  patientId               String                @map("patient_id") @db.Uuid
+  leadSurgeonId           String                @map("lead_surgeon_id") @db.Uuid
+  anesthesiologistId      String?               @map("anesthesiologist_id") @db.Uuid
+  roomId                  String?               @map("room_id") @db.Uuid
+  consentFormId           String?               @map("consent_form_id") @db.Uuid
+  consultationId          String?               @map("consultation_id") @db.Uuid
+  emergencyTriageId       String?               @map("emergency_triage_id") @db.Uuid
+  surgeryName             String                @map("surgery_name") @db.VarChar(150)
+  asaGrade                AsaRiskClassification @default(ASA_I) @map("asa_grade")
+  status                  SurgeryStatus         @default(SCHEDULED)
+  checklistSignInPassed   Boolean               @default(false) @map("checklist_sign_in_passed")
+  checklistTimeOutPassed  Boolean               @default(false) @map("checklist_time_out_passed")
+  checklistSignOutPassed  Boolean               @default(false) @map("checklist_sign_out_passed")
+  preOpWeightKg           Decimal               @map("pre_op_weight_kg") @db.Decimal(6, 3)
+  preMedicationProtocol   String?               @map("pre_medication_protocol") @db.Text
+  inductionAgent          String?               @map("induction_agent") @db.VarChar(100)
+  maintenanceAgent        String?               @default("ISOFLURANE") @map("maintenance_agent") @db.VarChar(100)
+  surgeryStartTime        DateTime?             @map("surgery_start_time") @db.Timestamptz
+  surgeryEndTime          DateTime?             @map("surgery_end_time") @db.Timestamptz
+  surgicalFindingsReport  String?               @map("surgical_findings_report") @db.Text
+  createdAt               DateTime              @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant                  Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch                  Branch                @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  patient                 Patient               @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  leadSurgeon             User                  @relation("LeadSurgeon", fields: [leadSurgeonId], references: [id], onDelete: Restrict)
+  anesthesiologist        User?                 @relation("Anesthesiologist", fields: [anesthesiologistId], references: [id], onDelete: SetNull)
+  room                    Room?                 @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  consentForm             DigitalConsentForm?   @relation(fields: [consentFormId], references: [id], onDelete: SetNull)
+  consultation            Consultation?         @relation(fields: [consultationId], references: [id], onDelete: SetNull)
+  emergencyTriage         EmergencyTriage?      @relation(fields: [emergencyTriageId], references: [id], onDelete: SetNull)
+  anesthesiaLogs          SurgeryAnesthesiaLog[]
+  dteInvoices             DteInvoice[]
+
+  @@map("surgeries")
+}
+
+model SurgeryAnesthesiaLog {
+  id               String   @id @default(uuid()) @db.Uuid
+  tenantId         String   @map("tenant_id") @db.Uuid
+  surgeryId        String   @map("surgery_id") @db.Uuid
+  recordedAt       DateTime @default(now()) @map("recorded_at") @db.Timestamptz
+  heartRateBpm     Int?     @map("heart_rate_bpm")
+  respiratoryRateBpm Int?   @map("respiratory_rate_bpm")
+  spo2Percent      Decimal? @map("spo2_percent") @db.Decimal(4, 1)
+  etco2Mmhg        Int?     @map("etco2_mmhg")
+  systolicBp       Int?     @map("systolic_bp")
+  diastolicBp      Int?     @map("diastolic_bp")
+  meanBp           Int?     @map("mean_bp")
+  tempCelsius      Decimal? @map("temp_celsius") @db.Decimal(4, 2)
+  vaporizerPct     Decimal? @map("vaporizer_pct") @db.Decimal(3, 1)
+  fluidRateMlHr    Decimal? @map("fluid_rate_ml_hr") @db.Decimal(6, 2)
+  administeredBolus String? @map("administered_bolus") @db.Text
+  notes            String?  @db.Text
+
+  tenant           Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  surgery          Surgery  @relation(fields: [surgeryId], references: [id], onDelete: Cascade)
+
+  @@map("surgery_anesthesia_logs")
+}
+
+// ============================================================================
+// 8. LABORATORIO, IMAGENOLOGÍA DICOM Y HOSPITALIZACIÓN UCI
+// ============================================================================
+
+model LabOrder {
+  id                String          @id @default(uuid()) @db.Uuid
+  tenantId          String          @map("tenant_id") @db.Uuid
+  branchId          String          @map("branch_id") @db.Uuid
+  patientId         String          @map("patient_id") @db.Uuid
+  requestedByVetId  String          @map("requested_by_vet_id") @db.Uuid
+  consultationId    String?         @map("consultation_id") @db.Uuid
+  emergencyTriageId String?         @map("emergency_triage_id") @db.Uuid
+  category          String          @db.VarChar(30)
+  profileName       String          @map("profile_name") @db.VarChar(150)
+  status            String          @default("ORDERED") @db.VarChar(20)
+  sampleType        String          @default("WHOLE_BLOOD_EDTA") @map("sample_type") @db.VarChar(50)
+  pdfAttachmentUrl  String?         @map("pdf_attachment_url") @db.Text
+  completedAt       DateTime?       @map("completed_at") @db.Timestamptz
+  createdAt         DateTime        @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant            Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch            Branch          @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  patient           Patient         @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  requestedByVet    User            @relation("LabRequestedBy", fields: [requestedByVetId], references: [id], onDelete: Restrict)
+  consultation      Consultation?   @relation(fields: [consultationId], references: [id], onDelete: SetNull)
+  emergencyTriage   EmergencyTriage? @relation(fields: [emergencyTriageId], references: [id], onDelete: SetNull)
+  results           LabTestResult[]
+  dteInvoices       DteInvoice[]
+
+  @@map("lab_orders")
+}
+
+model LabTestResult {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenantId      String   @map("tenant_id") @db.Uuid
+  orderId       String   @map("order_id") @db.Uuid
+  analyteName   String   @map("analyte_name") @db.VarChar(100)
+  analyteCode   String?  @map("analyte_code") @db.VarChar(30)
+  measuredValue Decimal  @map("measured_value") @db.Decimal(12, 3)
+  unitOfMeasure String   @map("unit_of_measure") @db.VarChar(30)
+  referenceLow  Decimal? @map("reference_low") @db.Decimal(12, 3)
+  referenceHigh Decimal? @map("reference_high") @db.Decimal(12, 3)
+  flag          String   @default("NORMAL") @db.VarChar(10)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  order         LabOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("lab_test_results")
+}
+
+model ImagingStudy {
+  id                    String           @id @default(uuid()) @db.Uuid
+  tenantId              String           @map("tenant_id") @db.Uuid
+  branchId              String           @map("branch_id") @db.Uuid
+  patientId             String           @map("patient_id") @db.Uuid
+  prescribedByVetId     String           @map("prescribed_by_vet_id") @db.Uuid
+  consultationId        String?          @map("consultation_id") @db.Uuid
+  emergencyTriageId     String?          @map("emergency_triage_id") @db.Uuid
+  modality              String           @default("X_RAY_DIGITAL") @db.VarChar(30)
+  anatomicalRegion      String           @map("anatomical_region") @db.VarChar(150)
+  clinicalHistoryReason String           @map("clinical_history_reason") @db.Text
+  status                String           @default("REQUESTED") @db.VarChar(20)
+  dicomStudyInstanceUid String?          @unique @map("dicom_study_instance_uid") @db.VarChar(128)
+  dicomWebPacsViewerUrl String?          @map("dicom_web_pacs_viewer_url") @db.Text
+  previewJpegUrl        String?          @map("preview_jpeg_url") @db.Text
+  radiologicalReport    String?          @map("radiological_report") @db.Text
+  measurementsJson      Json?            @map("measurements_json")
+  performedAt           DateTime?        @map("performed_at") @db.Timestamptz
+  createdAt             DateTime         @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant                Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch                Branch           @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  patient               Patient          @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  prescribedByVet       User             @relation("ImagingPrescribedBy", fields: [prescribedByVetId], references: [id], onDelete: Restrict)
+  consultation          Consultation?    @relation(fields: [consultationId], references: [id], onDelete: SetNull)
+  emergencyTriage       EmergencyTriage? @relation(fields: [emergencyTriageId], references: [id], onDelete: SetNull)
+  dteInvoices           DteInvoice[]
+
+  @@map("imaging_studies")
+}
+
+model Hospitalization {
+  id                 String                 @id @default(uuid()) @db.Uuid
+  tenantId           String                 @map("tenant_id") @db.Uuid
+  branchId           String                 @map("branch_id") @db.Uuid
+  patientId          String                 @map("patient_id") @db.Uuid
+  attendingVetId     String                 @map("attending_vet_id") @db.Uuid
+  consultationId     String?                @map("consultation_id") @db.Uuid
+  emergencyTriageId  String?                @map("emergency_triage_id") @db.Uuid
+  admissionDate      DateTime               @default(now()) @map("admission_date") @db.Timestamptz
+  dischargeDate      DateTime?              @map("discharge_date") @db.Timestamptz
+  admissionWeightKg  Decimal                @map("admission_weight_kg") @db.Decimal(6, 3)
+  status             String                 @default("ADMITTED") @db.VarChar(20)
+  admissionReason    String                 @map("admission_reason") @db.Text
+  dischargeSummary   String?                @map("discharge_summary") @db.Text
+  createdAt          DateTime               @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant             Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch             Branch                 @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  patient            Patient                @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  attendingVet       User                   @relation(fields: [attendingVetId], references: [id], onDelete: Restrict)
+  consultation       Consultation?          @relation(fields: [consultationId], references: [id], onDelete: SetNull)
+  emergencyTriage    EmergencyTriage?       @relation(fields: [emergencyTriageId], references: [id], onDelete: SetNull)
+  orders             HospitalizationOrder[]
+  dteInvoices        DteInvoice[]
+
+  @@map("hospitalizations")
+}
+
+model HospitalizationOrder {
+  id                String               @id @default(uuid()) @db.Uuid
+  tenantId          String               @map("tenant_id") @db.Uuid
+  hospitalizationId String               @map("hospitalization_id") @db.Uuid
+  orderType         String               @map("order_type") @db.VarChar(30)
+  name              String               @db.VarChar(150)
+  dosage            String?              @db.VarChar(100)
+  rateMlHr          Decimal?             @map("rate_ml_hr") @db.Decimal(6, 2)
+  frequencyHours    Int?                 @map("frequency_hours")
+  instructions      String?              @db.Text
+  isActive          Boolean              @default(true) @map("is_active")
+  createdAt         DateTime             @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant            Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  hospitalization   Hospitalization      @relation(fields: [hospitalizationId], references: [id], onDelete: Cascade)
+  executions        FlowboardExecution[]
+
+  @@map("hospitalization_orders")
+}
+
+model FlowboardExecution {
+  id                   String               @id @default(uuid()) @db.Uuid
+  tenantId             String               @map("tenant_id") @db.Uuid
+  orderId              String               @map("order_id") @db.Uuid
+  scheduledAt          DateTime             @map("scheduled_at") @db.Timestamptz
+  administeredAt       DateTime?            @map("administered_at") @db.Timestamptz
+  administeredByUserId String?              @map("administered_by_user_id") @db.Uuid
+  status               String               @default("PENDING") @db.VarChar(20)
+  vitalSignsPayload    Json?                @map("vital_signs_payload")
+  notes                String?              @db.Text
+  createdAt            DateTime             @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant               Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  order                HospitalizationOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  administeredBy       User?                @relation(fields: [administeredByUserId], references: [id], onDelete: SetNull)
+
+  @@map("flowboard_executions")
+}
+
+model GroomingSession {
+  id                   String    @id @default(uuid()) @db.Uuid
+  tenantId             String    @map("tenant_id") @db.Uuid
+  branchId             String    @map("branch_id") @db.Uuid
+  patientId            String    @map("patient_id") @db.Uuid
+  clientId             String    @map("client_id") @db.Uuid
+  groomerUserId        String?   @map("groomer_user_id") @db.Uuid
+  roomId               String?   @map("room_id") @db.Uuid
+  serviceType          String    @default("BATH_BASIC") @map("service_type") @db.VarChar(30)
+  status               String    @default("CHECKED_IN") @db.VarChar(20)
+  hasMatting           Boolean   @default(false) @map("has_matting")
+  hasParasites         Boolean   @default(false) @map("has_parasites")
+  hasSkinLesions       Boolean   @default(false) @map("has_skin_lesions")
+  requiresMedicalCheck Boolean   @default(false) @map("requires_medical_check")
+  dermatologicalNotes  String?   @map("dermatological_notes") @db.Text
+  photoBeforeUrl       String?   @map("photo_before_url") @db.Text
+  photoAfterUrl        String?   @map("photo_after_url") @db.Text
+  checkInAt            DateTime  @default(now()) @map("check_in_at") @db.Timestamptz
+  readyAt              DateTime? @map("ready_at") @db.Timestamptz
+  deliveredAt          DateTime? @map("delivered_at") @db.Timestamptz
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant               Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch               Branch    @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  patient              Patient   @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  client               Client    @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  groomer              User?     @relation(fields: [groomerUserId], references: [id], onDelete: SetNull)
+  room                 Room?     @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  dteInvoices          DteInvoice[]
+
+  @@map("grooming_sessions")
+}
+
+// ============================================================================
+// 9. INVENTARIO PEPS/FIFO, FARMACIA HOSPITALARIA Y COMPRAS
+// ============================================================================
+
+model Supplier {
+  id             String          @id @default(uuid()) @db.Uuid
+  tenantId       String          @map("tenant_id") @db.Uuid
+  name           String          @db.VarChar(150)
+  tradeName      String?         @map("trade_name") @db.VarChar(150)
+  nit            String?         @db.VarChar(17)
+  nrc            String?         @db.VarChar(20)
+  contactName    String?         @map("contact_name") @db.VarChar(100)
+  phoneE164      String?         @map("phone_e164") @db.VarChar(20)
+  email          String?         @db.VarChar(255)
+  address        String?         @db.Text
+  creditDays     Int             @default(0) @map("credit_days")
+  isActive       Boolean         @default(true) @map("is_active")
+  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  purchaseOrders PurchaseOrder[]
+
+  @@index([tenantId], name: "idx_suppliers_tenant")
+  @@map("suppliers")
+}
+
+model InventoryCategory {
+  id               String              @id @default(uuid()) @db.Uuid
+  tenantId         String              @map("tenant_id") @db.Uuid
+  name             String              @db.VarChar(100)
+  code             String?             @db.VarChar(30)
+  description      String?             @db.Text
+  parentCategoryId String?             @map("parent_category_id") @db.Uuid
+  createdAt        DateTime            @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant           Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  parentCategory   InventoryCategory?  @relation("CategoryHierarchy", fields: [parentCategoryId], references: [id], onDelete: SetNull)
+  subCategories    InventoryCategory[] @relation("CategoryHierarchy")
+  items            InventoryItem[]
+
+  @@map("inventory_categories")
+}
+
+model InventoryItem {
+  id                   String               @id @default(uuid()) @db.Uuid
+  tenantId             String               @map("tenant_id") @db.Uuid
+  categoryId           String?              @map("category_id") @db.Uuid
+  sku                  String               @db.VarChar(50)
+  barcode              String?              @db.VarChar(100)
+  name                 String               @db.VarChar(150)
+  genericName          String?              @map("generic_name") @db.VarChar(150)
+  unitOfMeasure        String               @default("UNIT") @map("unit_of_measure") @db.VarChar(30)
+  isMedication         Boolean              @default(false) @map("is_medication")
+  isControlledNarcotic Boolean              @default(false) @map("is_controlled_narcotic")
+  isFractionable       Boolean              @default(false) @map("is_fractionable")
+  totalVolumePerVialMl Decimal?             @map("total_volume_per_vial_ml") @db.Decimal(10, 3)
+  concentrationMgPerMl Decimal?             @map("concentration_mg_per_ml") @db.Decimal(10, 3)
+  costPriceAverage     Decimal              @default(0.0000) @map("cost_price_average") @db.Decimal(12, 4)
+  salePrice            Decimal              @map("sale_price") @db.Decimal(12, 4)
+  taxPercentage        Decimal              @default(13.00) @map("tax_percentage") @db.Decimal(5, 2)
+  isActive             Boolean              @default(true) @map("is_active")
+  createdAt            DateTime             @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant               Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  category             InventoryCategory?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  stocks               InventoryStock[]
+  lots                 InventoryLot[]
+  openVials            PharmacyOpenVial[]
+  poItems              PurchaseOrderItem[]
+  adjustments          InventoryAdjustment[]
+  transferItems        InventoryTransferItem[]
+  dteInvoiceItems      DteInvoiceItem[]
+
+  @@unique([tenantId, sku])
+  @@index([tenantId, barcode], name: "idx_inventory_items_barcode")
+  @@map("inventory_items")
+}
+
+model InventoryStock {
+  id                String        @id @default(uuid()) @db.Uuid
+  tenantId          String        @map("tenant_id") @db.Uuid
+  branchId          String        @map("branch_id") @db.Uuid
+  itemId            String        @map("item_id") @db.Uuid
+  currentQuantity   Decimal       @default(0.000) @map("current_quantity") @db.Decimal(12, 3)
+  minimumAlertStock Decimal       @default(5.000) @map("minimum_alert_stock") @db.Decimal(12, 3)
+  reorderQuantity   Decimal       @default(20.000) @map("reorder_quantity") @db.Decimal(12, 3)
+  locationBin       String?       @map("location_bin") @db.VarChar(50)
+  createdAt         DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant            Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch            Branch        @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  item              InventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([branchId, itemId])
+  @@index([tenantId, branchId], name: "idx_inventory_stocks_branch")
+  @@map("inventory_stocks")
+}
+
+model InventoryLot {
+  id                String                 @id @default(uuid()) @db.Uuid
+  tenantId          String                 @map("tenant_id") @db.Uuid
+  branchId          String                 @map("branch_id") @db.Uuid
+  itemId            String                 @map("item_id") @db.Uuid
+  lotNumber         String                 @map("lot_number") @db.VarChar(50)
+  expirationDate    DateTime               @map("expiration_date") @db.Date
+  initialQuantity   Decimal                @map("initial_quantity") @db.Decimal(12, 3)
+  currentQuantity   Decimal                @map("current_quantity") @db.Decimal(12, 3)
+  purchaseCostUnit  Decimal                @map("purchase_cost_unit") @db.Decimal(12, 4)
+  isExhausted       Boolean                @default(false) @map("is_exhausted")
+  createdAt         DateTime               @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant            Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch            Branch                 @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  item              InventoryItem          @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  openVials         PharmacyOpenVial[]
+  adjustments       InventoryAdjustment[]
+  transferItems     InventoryTransferItem[]
+  dteInvoiceItems   DteInvoiceItem[]
+
+  @@index([tenantId, branchId, itemId, expirationDate], name: "idx_lots_peps_fifo")
+  @@map("inventory_lots")
+}
+
+model PharmacyOpenVial {
+  id                   String        @id @default(uuid()) @db.Uuid
+  tenantId             String        @map("tenant_id") @db.Uuid
+  branchId             String        @map("branch_id") @db.Uuid
+  itemId               String        @map("item_id") @db.Uuid
+  lotId                String        @map("lot_id") @db.Uuid
+  openedByUserId       String        @map("opened_by_user_id") @db.Uuid
+  initialVolumeMl      Decimal       @map("initial_volume_ml") @db.Decimal(10, 3)
+  remainingVolumeMl    Decimal       @map("remaining_volume_ml") @db.Decimal(10, 3)
+  openedAt             DateTime      @default(now()) @map("opened_at") @db.Timestamptz
+  expiresAfterOpeningAt DateTime     @map("expires_after_opening_at") @db.Timestamptz
+  isExhausted          Boolean       @default(false) @map("is_exhausted")
+
+  tenant               Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch               Branch        @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  item                 InventoryItem @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  lot                  InventoryLot  @relation(fields: [lotId], references: [id], onDelete: Restrict)
+  openedBy             User          @relation(fields: [openedByUserId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, branchId, itemId], name: "idx_open_vials_active")
+  @@map("pharmacy_open_vials")
+}
+
+model PurchaseOrder {
+  id                    String              @id @default(uuid()) @db.Uuid
+  tenantId              String              @map("tenant_id") @db.Uuid
+  branchId              String              @map("branch_id") @db.Uuid
+  supplierId            String              @map("supplier_id") @db.Uuid
+  poNumber              String              @map("po_number") @db.VarChar(30)
+  status                String              @default("DRAFT") @db.VarChar(20)
+  supplierInvoiceNumber String?             @map("supplier_invoice_number") @db.VarChar(50)
+  totalAmount           Decimal             @default(0.00) @map("total_amount") @db.Decimal(12, 2)
+  orderedByUserId       String              @map("ordered_by_user_id") @db.Uuid
+  receivedByUserId      String?             @map("received_by_user_id") @db.Uuid
+  receivedAt            DateTime?           @map("received_at") @db.Timestamptz
+  notes                 String?             @db.Text
+  createdAt             DateTime            @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant                Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch                Branch              @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  supplier              Supplier            @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  orderedBy             User                @relation("PoOrderedBy", fields: [orderedByUserId], references: [id], onDelete: Restrict)
+  receivedBy            User?               @relation("PoReceivedBy", fields: [receivedByUserId], references: [id], onDelete: SetNull)
+  items                 PurchaseOrderItem[]
+
+  @@unique([tenantId, poNumber])
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id              String        @id @default(uuid()) @db.Uuid
+  tenantId        String        @map("tenant_id") @db.Uuid
+  purchaseOrderId String        @map("purchase_order_id") @db.Uuid
+  itemId          String        @map("item_id") @db.Uuid
+  quantityOrdered Decimal       @map("quantity_ordered") @db.Decimal(12, 3)
+  quantityReceived Decimal      @default(0.000) @map("quantity_received") @db.Decimal(12, 3)
+  unitCost        Decimal       @map("unit_cost") @db.Decimal(12, 4)
+  lotNumber       String?       @map("lot_number") @db.VarChar(50)
+  expirationDate  DateTime?     @map("expiration_date") @db.Date
+  subtotal        Decimal       @db.Decimal(12, 2)
+
+  tenant          Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  item            InventoryItem @relation(fields: [itemId], references: [id], onDelete: Restrict)
+
+  @@map("purchase_order_items")
+}
+
+model InventoryAdjustment {
+  id                 String         @id @default(uuid()) @db.Uuid
+  tenantId           String         @map("tenant_id") @db.Uuid
+  branchId           String         @map("branch_id") @db.Uuid
+  itemId             String         @map("item_id") @db.Uuid
+  lotId              String?        @map("lot_id") @db.Uuid
+  adjustmentType     String         @map("adjustment_type") @db.VarChar(30)
+  quantityAdjusted   Decimal        @map("quantity_adjusted") @db.Decimal(12, 3)
+  justification      String         @db.Text
+  authorizedByUserId String         @map("authorized_by_user_id") @db.Uuid
+  createdAt          DateTime       @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant             Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch             Branch         @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  item               InventoryItem  @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  lot                InventoryLot?  @relation(fields: [lotId], references: [id], onDelete: SetNull)
+  authorizedBy       User           @relation(fields: [authorizedByUserId], references: [id], onDelete: Restrict)
+
+  @@map("inventory_adjustments")
+}
+
+model InventoryTransfer {
+  id                 String                  @id @default(uuid()) @db.Uuid
+  tenantId           String                  @map("tenant_id") @db.Uuid
+  sourceBranchId     String                  @map("source_branch_id") @db.Uuid
+  targetBranchId     String                  @map("target_branch_id") @db.Uuid
+  transferCode       String                  @map("transfer_code") @db.VarChar(30)
+  status             String                  @default("REQUESTED") @db.VarChar(20)
+  requestedByUserId  String                  @map("requested_by_user_id") @db.Uuid
+  sentByUserId       String?                 @map("sent_by_user_id") @db.Uuid
+  receivedByUserId   String?                 @map("received_by_user_id") @db.Uuid
+  notes              String?                 @db.Text
+  createdAt          DateTime                @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant             Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  sourceBranch       Branch                  @relation("SourceBranch", fields: [sourceBranchId], references: [id], onDelete: Restrict)
+  targetBranch       Branch                  @relation("TargetBranch", fields: [targetBranchId], references: [id], onDelete: Restrict)
+  requestedBy        User                    @relation("TransferRequestedBy", fields: [requestedByUserId], references: [id], onDelete: Restrict)
+  sentBy             User?                   @relation("TransferSentBy", fields: [sentByUserId], references: [id], onDelete: SetNull)
+  receivedBy         User?                   @relation("TransferReceivedBy", fields: [receivedByUserId], references: [id], onDelete: SetNull)
+  items              InventoryTransferItem[]
+
+  @@unique([tenantId, transferCode])
+  @@map("inventory_transfers")
+}
+
+model InventoryTransferItem {
+  id               String             @id @default(uuid()) @db.Uuid
+  tenantId         String             @map("tenant_id") @db.Uuid
+  transferId       String             @map("transfer_id") @db.Uuid
+  itemId           String             @map("item_id") @db.Uuid
+  lotId            String?            @map("lot_id") @db.Uuid
+  quantitySent     Decimal            @map("quantity_sent") @db.Decimal(12, 3)
+  quantityReceived Decimal            @default(0.000) @map("quantity_received") @db.Decimal(12, 3)
+
+  tenant           Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  transfer         InventoryTransfer  @relation(fields: [transferId], references: [id], onDelete: Cascade)
+  item             InventoryItem      @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  lot              InventoryLot?      @relation(fields: [lotId], references: [id], onDelete: SetNull)
+
+  @@map("inventory_transfer_items")
+}
+
+// ============================================================================
+// 10. FACTURACIÓN ELECTRÓNICA DTE (EL SALVADOR)
+// ============================================================================
+
+model TenantDteConfig {
+  id                      String            @id @default(uuid()) @db.Uuid
+  tenantId                String            @unique @map("tenant_id") @db.Uuid
+  environment             MhEnvironmentType @default(SANDBOX)
+  authUser                String            @map("auth_user") @db.VarChar(100)
+  apiAuthToken            String?           @map("api_auth_token") @db.Text
+  apiAuthTokenExpiresAt   DateTime?         @map("api_auth_token_expires_at") @db.Timestamptz
+  privateKeyEncrypted     String            @map("private_key_encrypted") @db.Text
+  certificatePasswordHash String            @map("certificate_password_hash") @db.VarChar(255)
+  createdAt               DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt               DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant                  Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("tenant_dte_configs")
+}
+
+model DteInvoice {
+  id                 String                @id @default(uuid()) @db.Uuid
+  tenantId           String                @map("tenant_id") @db.Uuid
+  branchId           String                @map("branch_id") @db.Uuid
+  posTerminalId      String                @map("pos_terminal_id") @db.Uuid
+  clientId           String                @map("client_id") @db.Uuid
+  patientId          String?               @map("patient_id") @db.Uuid
+
+  emergencyTriageId  String?               @map("emergency_triage_id") @db.Uuid
+  consultationId     String?               @map("consultation_id") @db.Uuid
+  surgeryId          String?               @map("surgery_id") @db.Uuid
+  hospitalizationId  String?               @map("hospitalization_id") @db.Uuid
+  groomingSessionId  String?               @map("grooming_session_id") @db.Uuid
+  labOrderId         String?               @map("lab_order_id") @db.Uuid
+  imagingStudyId     String?               @map("imaging_study_id") @db.Uuid
+
+  dteType            DteDocumentType       @default(FACTURA) @map("dte_type")
+  generationCode     String                @default(uuid()) @map("generation_code") @db.Uuid
+  controlNumber      String                @map("control_number") @db.VarChar(31)
+  sequentialNumber   BigInt                @map("sequential_number")
+  transmissionStatus DteTransmissionStatus @default(DRAFT) @map("transmission_status")
+  receptionStamp     String?               @map("reception_stamp") @db.VarChar(50)
+  mhReceivedAt       DateTime?             @map("mh_received_at") @db.Timestamptz
+
+  totalExempt        Decimal               @default(0.00) @map("total_exempt") @db.Decimal(12, 2)
+  totalGravado       Decimal               @default(0.00) @map("total_gravado") @db.Decimal(12, 2)
+  subtotal           Decimal               @db.Decimal(12, 2)
+  ivaAmount          Decimal               @default(0.00) @map("iva_amount") @db.Decimal(12, 2)
+  ivaRetention       Decimal               @default(0.00) @map("iva_retention") @db.Decimal(12, 2)
+  totalPayable       Decimal               @map("total_payable") @db.Decimal(12, 2)
+
+  paymentMethodCode  String                @default("01") @map("payment_method_code") @db.VarChar(2)
+  signedJwsPayload   String?               @map("signed_jws_payload") @db.Text
+  qrUrl              String?               @map("qr_url") @db.Text
+  pdfUrl             String?               @map("pdf_url") @db.Text
+  issuedAt           DateTime              @default(now()) @map("issued_at") @db.Timestamptz
+  createdAt          DateTime              @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant             Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch             Branch                @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  posTerminal        PosTerminal           @relation(fields: [posTerminalId], references: [id], onDelete: Restrict)
+  client             Client                @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  patient            Patient?              @relation(fields: [patientId], references: [id], onDelete: SetNull)
+
+  emergencyTriage    EmergencyTriage?      @relation(fields: [emergencyTriageId], references: [id], onDelete: SetNull)
+  consultation       Consultation?         @relation(fields: [consultationId], references: [id], onDelete: SetNull)
+  surgery            Surgery?              @relation(fields: [surgeryId], references: [id], onDelete: SetNull)
+  hospitalization    Hospitalization?      @relation(fields: [hospitalizationId], references: [id], onDelete: SetNull)
+  groomingSession    GroomingSession?      @relation(fields: [groomingSessionId], references: [id], onDelete: SetNull)
+  labOrder           LabOrder?             @relation(fields: [labOrderId], references: [id], onDelete: SetNull)
+  imagingStudy       ImagingStudy?         @relation(fields: [imagingStudyId], references: [id], onDelete: SetNull)
+
+  items              DteInvoiceItem[]
+
+  @@unique([tenantId, dteType, controlNumber])
+  @@map("dte_invoices")
+}
+
+model DteInvoiceItem {
+  id          String         @id @default(uuid()) @db.Uuid
+  tenantId    String         @map("tenant_id") @db.Uuid
+  invoiceId   String         @map("invoice_id") @db.Uuid
+  itemId      String?        @map("item_id") @db.Uuid
+  lotId       String?        @map("lot_id") @db.Uuid
+  itemNumber  Int            @map("item_number")
+  itemType    String         @map("item_type") @db.VarChar(20)
+  description String         @db.VarChar(250)
+  quantity    Decimal        @db.Decimal(10, 3)
+  unitPrice   Decimal        @map("unit_price") @db.Decimal(12, 4)
+  lineTotal   Decimal        @map("line_total") @db.Decimal(12, 2)
+
+  tenant      Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  invoice     DteInvoice     @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  item        InventoryItem? @relation(fields: [itemId], references: [id], onDelete: SetNull)
+  lot         InventoryLot?  @relation(fields: [lotId], references: [id], onDelete: SetNull)
+
+  @@unique([invoiceId, itemNumber])
+  @@map("dte_invoice_items")
+}
