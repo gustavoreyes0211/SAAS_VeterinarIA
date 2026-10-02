@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Stethoscope,
+  CalendarDays,
   History,
   PawPrint,
   Users,
@@ -80,6 +81,15 @@ export function CollapsibleSidebar({
     {
       category: "Clínica & Atención",
       items: [
+        {
+          title: "Agenda & Citas",
+          href: `/${activeBranch}/citas`,
+          icon: CalendarDays,
+          badge: "Hoy",
+          badgeVariant: "info",
+          shortcut: "Ctrl+A",
+          description: "Calendario de recepción y turnos",
+        },
         {
           title: "Consultas Médicas (SOAP)",
           href: `/${activeBranch}/consultas`,

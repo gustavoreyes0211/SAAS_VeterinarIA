@@ -883,6 +883,130 @@ async function main() {
     });
   }
 
+  // ── 10. Horarios Médicos y Citas de Demostración ──
+  console.log('  -> Sembrando horarios médicos semanales y citas...');
+  const doctorProf = await prisma.doctorProfile.findFirst({
+    where: { userId: adminUser.id },
+  });
+
+  if (doctorProf) {
+    // Horario Lunes a Sábado (1 al 6)
+    for (let day = 1; day <= 6; day++) {
+      const existingSched = await prisma.doctorSchedule.findFirst({
+        where: {
+          branchId: branch.id,
+          doctorId: doctorProf.id,
+          dayOfWeek: day,
+        },
+      });
+
+      if (!existingSched) {
+        await prisma.doctorSchedule.create({
+          data: {
+            tenantId: tenant.id,
+            branchId: branch.id,
+            doctorId: doctorProf.id,
+            dayOfWeek: day,
+            startTime: '08:00',
+            endTime: '17:00',
+            breakStartTime: '12:00',
+            breakEndTime: '13:00',
+            slotDurationMinutes: 30,
+            dailyConsultationLimit: 12,
+            isActive: true,
+          },
+        });
+      }
+    }
+
+    // Citas Médicas de Demostración
+    const countAppts = await prisma.appointment.count({
+      where: { branchId: branch.id },
+    });
+
+    if (countAppts === 0) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      // Cita 1: Hoy 09:00 - En Consulta
+      await prisma.appointment.create({
+        data: {
+          tenantId: tenant.id,
+          branchId: branch.id,
+          doctorId: doctorProf.id,
+          patientId: patient1.id,
+          clientId: client1.id,
+          appointmentDate: today,
+          startTime: '09:00',
+          endTime: '09:30',
+          status: 'IN_CONSULTATION',
+          serviceType: 'CONSULTA_GENERAL',
+          reasonForVisit: 'Control postquirúrgico y revisión de narinas/paladar.',
+          internalNotes: 'Tutor refiere evolución favorable en casa.',
+          createdByUserId: adminUser.id,
+        },
+      });
+
+      // Cita 2: Hoy 10:00 - En Sala de Espera
+      await prisma.appointment.create({
+        data: {
+          tenantId: tenant.id,
+          branchId: branch.id,
+          doctorId: doctorProf.id,
+          patientId: patient2.id,
+          clientId: client2.id,
+          appointmentDate: today,
+          startTime: '10:00',
+          endTime: '10:30',
+          status: 'IN_WAITING_ROOM',
+          serviceType: 'REVISION_POST_OP',
+          reasonForVisit: 'Chequeo de tolerancia oral y ganancia de peso post-alta UCI.',
+          internalNotes: 'Paciente arribó a recepción a las 09:55 AM.',
+          createdByUserId: adminUser.id,
+        },
+      });
+
+      // Cita 3: Hoy 14:30 - Confirmada
+      await prisma.appointment.create({
+        data: {
+          tenantId: tenant.id,
+          branchId: branch.id,
+          doctorId: doctorProf.id,
+          patientId: patient1.id,
+          clientId: client1.id,
+          appointmentDate: today,
+          startTime: '14:30',
+          endTime: '15:00',
+          status: 'CONFIRMED',
+          serviceType: 'ESPECIALIDAD_DERMATOLOGIA',
+          reasonForVisit: 'Evaluación de dermatitis atópica interdigital y raspado cutáneo.',
+          createdByUserId: adminUser.id,
+        },
+      });
+
+      // Cita 4: Mañana 11:00 - Agendada
+      await prisma.appointment.create({
+        data: {
+          tenantId: tenant.id,
+          branchId: branch.id,
+          doctorId: doctorProf.id,
+          patientId: patient2.id,
+          clientId: client2.id,
+          appointmentDate: tomorrow,
+          startTime: '11:00',
+          endTime: '11:30',
+          status: 'SCHEDULED',
+          serviceType: 'VACUNACION',
+          reasonForVisit: 'Aplicación de vacuna Triple Felina y desparasitación.',
+          createdByUserId: adminUser.id,
+        },
+      });
+    }
+  }
+
 
   console.log('✅ Siembra de datos completada exitosamente.');
   console.log('----------------------------------------------------');
