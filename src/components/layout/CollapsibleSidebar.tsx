@@ -58,6 +58,8 @@ export function CollapsibleSidebar({
   initialCollapsed?: boolean;
 }) {
   const pathname = usePathname();
+  const pathParts = pathname?.split("/").filter(Boolean) || [];
+  const activeBranch = pathParts[0] || branchId;
   const [isCollapsed, setIsCollapsed] = useState(initialCollapsed);
   const [isDarkMode, setIsDarkMode] = useState(true);
 
@@ -79,7 +81,7 @@ export function CollapsibleSidebar({
       items: [
         {
           title: "Consultas Médicas (SOAP)",
-          href: `/${branchId}/consultas`,
+          href: `/${activeBranch}/consultas`,
           icon: Stethoscope,
           badge: 3,
           badgeVariant: "info",
@@ -88,20 +90,20 @@ export function CollapsibleSidebar({
         },
         {
           title: "Expediente 360°",
-          href: `/${branchId}/pacientes`,
+          href: `/${activeBranch}/pacientes`,
           icon: History,
           shortcut: "Ctrl+H",
           description: "Historial longitudinal y timeline",
         },
         {
           title: "Pacientes (Mascotas)",
-          href: `/${branchId}/pacientes`,
+          href: `/${activeBranch}/pacientes`,
           icon: PawPrint,
           description: "Microchips ISO, razas y vacunas",
         },
         {
           title: "Clientes & Tutores",
-          href: `/${branchId}/clientes`,
+          href: `/${activeBranch}/clientes`,
           icon: Users,
           description: "DUI/NIT/NRC, créditos y contactos",
         },
@@ -112,7 +114,7 @@ export function CollapsibleSidebar({
       items: [
         {
           title: "Semáforo de Triaje (VECCS)",
-          href: `/${branchId}/emergencias`,
+          href: `/${activeBranch}/emergencias`,
           icon: Siren,
           badge: 2,
           badgeVariant: "danger",
@@ -121,20 +123,20 @@ export function CollapsibleSidebar({
         },
         {
           title: "Carrito Rojo (Paro CPR)",
-          href: `/${branchId}/emergencias/crash-cart`,
+          href: `/${activeBranch}/emergencias/crash-cart`,
           icon: Zap,
           shortcut: "Ctrl+R",
           description: "Calculadora RECOVER y metrónomo",
         },
         {
           title: "Centro Quirúrgico & ASA",
-          href: `/${branchId}/quirofano`,
+          href: `/${activeBranch}/quirofano`,
           icon: Scissors,
           description: "Monitoreo anestésico minuto a minuto",
         },
         {
           title: "Pizarra UCI 24/7 (Flowboard)",
-          href: `/${branchId}/uci`,
+          href: `/${activeBranch}/uci`,
           icon: Activity,
           badge: 4,
           badgeVariant: "warning",
@@ -148,13 +150,13 @@ export function CollapsibleSidebar({
       items: [
         {
           title: "Rayos X & Visor DICOM",
-          href: `/${branchId}/imagenologia`,
+          href: `/${activeBranch}/imagenologia`,
           icon: ScanLine,
           description: "Visor Web PACS con mediciones VHS y TPLO",
         },
         {
           title: "Laboratorio Clínico",
-          href: `/${branchId}/laboratorio`,
+          href: `/${activeBranch}/laboratorio`,
           icon: FlaskConical,
           description: "Biomarcadores y curvas de tendencias",
         },
@@ -165,13 +167,13 @@ export function CollapsibleSidebar({
       items: [
         {
           title: "Consultorios & Salas",
-          href: `/${branchId}/consultorios`,
+          href: `/${activeBranch}/consultorios`,
           icon: DoorClosed,
           description: "Estados en tiempo real y asignación médica",
         },
         {
           title: "Inventario & Lotes PEPS",
-          href: `/${branchId}/inventario`,
+          href: `/${activeBranch}/inventario`,
           icon: Pill,
           badge: "!",
           badgeVariant: "warning",
@@ -180,7 +182,7 @@ export function CollapsibleSidebar({
         },
         {
           title: "Peluquería / Grooming",
-          href: `/${branchId}/peluqueria`,
+          href: `/${activeBranch}/peluqueria`,
           icon: Sparkles,
           description: "Tablero Kanban de baño y corte",
         },
@@ -191,14 +193,14 @@ export function CollapsibleSidebar({
       items: [
         {
           title: "Facturación DTE El Salvador",
-          href: `/${branchId}/facturacion`,
+          href: `/${activeBranch}/facturacion`,
           icon: ReceiptText,
           shortcut: "Ctrl+F",
           description: "Factura DTE-01, Crédito Fiscal 03 y Hacienda",
         },
         {
           title: "Kiosco Turnos Smart TV",
-          href: `/turnos/${branchId}`,
+          href: `/turnos/${activeBranch}`,
           icon: Tv,
           description: "Pantalla sala de espera con sonido chime",
         },
@@ -209,7 +211,7 @@ export function CollapsibleSidebar({
       items: [
         {
           title: "Médicos JVPM & Usuarios",
-          href: `/${branchId}/configuracion`,
+          href: `/${activeBranch}/configuracion`,
           icon: UserCog,
           description: "Cédulas de colegiatura, firmas y RBAC",
         },

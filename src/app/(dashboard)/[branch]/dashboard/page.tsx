@@ -17,7 +17,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-export default function BranchDashboardPage() {
+interface BranchDashboardPageProps {
+  params: Promise<{
+    branch: string;
+  }>;
+}
+
+export default async function BranchDashboardPage({ params }: BranchDashboardPageProps) {
+  const { branch } = await params;
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* ── BANNER DE BIENVENIDA CLÍNICA ── */}
@@ -50,7 +57,7 @@ export default function BranchDashboardPage() {
               asChild
               className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs h-10 shadow-lg shadow-emerald-600/20"
             >
-              <Link href="/central/consultas/nueva">
+              <Link href={`/${branch}/consultas/nueva`}>
                 <Stethoscope className="h-4 w-4 mr-1.5" />
                 Nueva Consulta SOAP
               </Link>
@@ -60,7 +67,7 @@ export default function BranchDashboardPage() {
               variant="destructive"
               className="font-medium text-xs h-10 shadow-lg shadow-rose-600/20"
             >
-              <Link href="/central/emergencias">
+              <Link href={`/${branch}/emergencias`}>
                 <Siren className="h-4 w-4 mr-1.5 animate-pulse" />
                 Triaje Urgencias (VECCS)
               </Link>

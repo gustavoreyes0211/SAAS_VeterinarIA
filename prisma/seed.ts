@@ -316,6 +316,259 @@ async function main() {
     },
   });
 
+  // 6. Pacientes y Tutores de Demostración Clínica
+  console.log('  -> Creando clientes y pacientes de demostración...');
+  const client1 = await prisma.client.create({
+    data: {
+      tenantId: tenant.id,
+      firstName: 'Carlos Alberto',
+      lastName: 'Mendoza Flores',
+      taxType: 'CONSUMIDOR_FINAL',
+      category: 'VIP',
+      dui: '04581290-3',
+      phoneE164: '+503 7845-1234',
+      secondaryPhone: '+503 2260-4455',
+      email: 'carlos.mendoza@gmail.com',
+      address: 'Colonia Escalón, Calle El Mirador, Pasaje 3 #14',
+      departmentCode: '06',
+      municipalityCode: '14',
+      emergencyContactName: 'Sofía Mendoza (Esposa)',
+      emergencyContactPhone: '+503 7122-3344',
+      emergencyContactRelationship: 'CÓNYUGE',
+      currentBalance: 0,
+      creditLimit: 500,
+    },
+  });
+
+  const client2 = await prisma.client.create({
+    data: {
+      tenantId: tenant.id,
+      firstName: 'María Elena',
+      lastName: 'Hernández de Sol',
+      taxType: 'CONTRIBUYENTE_CREDITO_FISCAL',
+      category: 'FREQUENT',
+      nit: '0614-120588-102-3',
+      nrc: '294812-4',
+      tradeName: 'Servicios Agropecuarios Sol S.A. de C.V.',
+      phoneE164: '+503 7234-5678',
+      email: 'm.hernandez@solgroup.sv',
+      address: 'Boulevard Los Próceres, Edificio Torre Roble Nivel 4',
+      departmentCode: '06',
+      municipalityCode: '14',
+      emergencyContactName: 'Rodrigo Sol',
+      emergencyContactPhone: '+503 7999-8877',
+      emergencyContactRelationship: 'HIJO',
+    },
+  });
+
+  // Paciente 1: Rocky (Bulldog Francés con Alergia a Penicilinas)
+  const frenchieBreed = await prisma.breed.findFirst({
+    where: { name: 'Bulldog Francés' },
+  });
+
+  const patient1 = await prisma.patient.create({
+    data: {
+      tenantId: tenant.id,
+      clientId: client1.id,
+      breedId: frenchieBreed?.id,
+      name: 'Rocky',
+      species: 'CANINE',
+      breed: 'Bulldog Francés',
+      gender: 'MALE_NEUTERED',
+      birthDate: new Date('2022-04-10'),
+      microchipNumber: '981098104523190',
+      coatColor: 'Atigrado / Brindle',
+      bloodType: 'DEA 1.1 Positivo',
+      temperamentAlert: 'FEARFUL_AGGRESSIVE',
+      knownAllergies: ['Amoxicilina + Clavulánico', 'Proteína de Pollo', 'Picadura de Pulga'],
+      chronicConditions: ['Síndrome Braquicefálico Leve', 'Dermatitis Atópica'],
+    },
+  });
+
+  // Paciente 2: Luna (Felino Siamés)
+  const siameseBreed = await prisma.breed.findFirst({
+    where: { name: 'Siamés' },
+  });
+
+  const patient2 = await prisma.patient.create({
+    data: {
+      tenantId: tenant.id,
+      clientId: client2.id,
+      breedId: siameseBreed?.id,
+      name: 'Luna',
+      species: 'FELINE',
+      breed: 'Siamés',
+      gender: 'FEMALE_SPAYED',
+      birthDate: new Date('2023-08-15'),
+      microchipNumber: '981098107765432',
+      coatColor: 'Seal Point',
+      temperamentAlert: 'FRIENDLY',
+      knownAllergies: [],
+      chronicConditions: [],
+    },
+  });
+
+  // Historial de pesos de Rocky
+  await prisma.patientWeightHistory.createMany({
+    data: [
+      {
+        tenantId: tenant.id,
+        branchId: branch.id,
+        patientId: patient1.id,
+        weightKg: 13.8,
+        recordedByUserId: adminUser.id,
+        recordedAt: new Date(Date.now() - 60 * 24 * 3600 * 1000),
+      },
+      {
+        tenantId: tenant.id,
+        branchId: branch.id,
+        patientId: patient1.id,
+        weightKg: 14.2,
+        recordedByUserId: adminUser.id,
+        recordedAt: new Date(Date.now() - 15 * 24 * 3600 * 1000),
+      },
+    ],
+  });
+
+  // Historial de pesos de Luna
+  await prisma.patientWeightHistory.create({
+    data: {
+      tenantId: tenant.id,
+      branchId: branch.id,
+      patientId: patient2.id,
+      weightKg: 3.85,
+      recordedByUserId: adminUser.id,
+    },
+  });
+
+  // Medicina preventiva: Vacuna y desparasitación para Rocky
+  await prisma.vaccinationRecord.create({
+    data: {
+      tenantId: tenant.id,
+      branchId: branch.id,
+      patientId: patient1.id,
+      vaccineName: 'Séxtuple Canina (DHPPi/L4)',
+      lotNumber: 'L-89421A',
+      status: 'APPLIED',
+      administeredAt: new Date(Date.now() - 30 * 24 * 3600 * 1000),
+      nextDueDate: new Date(Date.now() + 335 * 24 * 3600 * 1000),
+      veterinarianId: adminUser.id,
+      notes: 'Aplicación en cuadrante escapular derecho sin reacciones adversas.',
+    },
+  });
+
+  await prisma.dewormingRecord.create({
+    data: {
+      tenantId: tenant.id,
+      branchId: branch.id,
+      patientId: patient1.id,
+      productName: 'Drontal Plus Sabor (Praziquantel/Pirantel/Febantel)',
+      type: 'INTERNAL',
+      administeredAt: new Date(Date.now() - 15 * 24 * 3600 * 1000),
+      nextDueDate: new Date(Date.now() + 75 * 24 * 3600 * 1000),
+      veterinarianId: adminUser.id,
+    },
+  });
+
+  // Consulta Médica SOAP Demostrativa Cerrada e Inmutable para Rocky
+  const consultation1 = await prisma.consultation.create({
+    data: {
+      tenantId: tenant.id,
+      branchId: branch.id,
+      patientId: patient1.id,
+      veterinarianId: adminUser.id,
+      consultationType: 'GENERAL',
+      anamnesisReason: 'Dificultad respiratoria estridulosa post ejercicio leve y prurito podal intenso.',
+      currentDiet: 'Alimento hipoalergénico Royal Canin Hydrolyzed Protein 150g BID',
+      currentMedications: 'Oclacitinib (Apoquel) 5.4mg cada 24 horas',
+      weightKg: 14.2,
+      tempCelsius: 38.6,
+      heartRateBpm: 110,
+      respiratoryRateBpm: 26,
+      systolicBp: 125,
+      capillaryRefillSeconds: 1.5,
+      mucousMembraneStatus: 'PINK',
+      hydrationPercentage: 0,
+      bodyConditionScore: 6,
+      painScaleScore: 0,
+      physicalExamSystems: {
+        eyes: { normal: true, notes: 'Sin secreciones ni epífora' },
+        ears: { normal: true, notes: 'Conductos limpios, sin eritema' },
+        oral: { normal: true, notes: 'Tártaro dental grado 1, sin halitosis' },
+        cardio: { normal: true, notes: 'Ritmo regular, sin soplos audibles' },
+        resp: { normal: false, notes: 'Estridor inspiratorio típico braquicefálico; campos pulmonares limpios' },
+        abdomen: { normal: true, notes: 'Blando, depresible, no reactivo al dolor' },
+        lymph: { normal: true, notes: 'Linfonodos poplíteos y mandibulares simétricos' },
+        musculo: { normal: true, notes: 'Sin claudicación evidente' },
+        skin: { normal: false, notes: 'Eritema interdigital en miembros anteriores compatible con atopia' },
+        neuro: { normal: true, notes: 'Pares craneales y reflejos posturales intactos' },
+      },
+      subjective: 'Tutor refiere que el paciente presentó ronquidos aumentados luego de paseo matutino y lamido continuo en ambas patas anteriores.',
+      objective: 'Estridor laríngeo audible sin disnea franca. Mucosas rosadas y húmedas. Eritema leve en pliegues interdigitales anteriores, sin exudado.',
+      assessmentDiagnosis: '1. Síndrome Braquicefálico Grado I en reposo. 2. Dermatitis Atópica Interdigital reactivada.',
+      differentialDiagnoses: ['Malassezia interdigital', 'Pododermatitis bacteriana secundaria', 'Rinorrea retrógrada'],
+      planTherapeuticSummary: 'Manejo ambiental estricto con aire acondicionado. Baños podales con Clorhexidina al 3% dos veces por semana. Continuar Apoquel.',
+      requiresHospitalization: false,
+      requiresSurgery: false,
+      requiresLabTests: false,
+      requiresImaging: false,
+      isClosed: true,
+      closedAt: new Date(),
+    },
+  });
+
+  // Receta Médica Digital para la consulta
+  const rx1 = await prisma.prescription.create({
+    data: {
+      tenantId: tenant.id,
+      branchId: branch.id,
+      patientId: patient1.id,
+      veterinarianId: adminUser.id,
+      consultationId: consultation1.id,
+      prescriptionCode: 'REC-2026-001',
+      generalIndications: 'Evitar sobrepeso y paseos en horas de calor extremo (11:00 AM a 3:00 PM).',
+    },
+  });
+
+  await prisma.prescriptionItem.createMany({
+    data: [
+      {
+        tenantId: tenant.id,
+        prescriptionId: rx1.id,
+        medicationName: 'Apoquel (Oclacitinib)',
+        activeIngredient: 'Oclacitinib maleato 5.4mg',
+        dosageText: '5.4 mg (1 comprimido)',
+        routeOfAdministration: 'ORAL',
+        frequencyHours: 24,
+        durationDays: 30,
+        quantityToDispense: '1 Caja (30 comprimidos)',
+        specialInstructions: 'Administrar preferentemente en la mañana con alimento.',
+      },
+      {
+        tenantId: tenant.id,
+        prescriptionId: rx1.id,
+        medicationName: 'Shampoo Clorhexidina 3% + Ketoconazol',
+        activeIngredient: 'Clorhexidina digluconato 30mg/ml',
+        dosageText: 'Baño local en patas',
+        routeOfAdministration: 'TOPICA',
+        frequencyHours: 72,
+        durationDays: 21,
+        quantityToDispense: '1 Frasco 250ml',
+        specialInstructions: 'Dejar actuar por 10 minutos antes de enjuagar con abundante agua tibia.',
+      },
+    ],
+  });
+
+  // Adenda Médica de ejemplo
+  await prisma.consultationAddendum.create({
+    data: {
+      tenantId: tenant.id,
+      consultationId: consultation1.id,
+      veterinarianId: adminUser.id,
+      addendumText: 'Tutor reporta vía telefónica a las 48h excelente respuesta: cese del lamido interdigital y buena ventilación en reposo.',
+    },
+  });
+
   console.log('✅ Siembra de datos completada exitosamente.');
   console.log('----------------------------------------------------');
   console.log('Credenciales de acceso clínico:');
