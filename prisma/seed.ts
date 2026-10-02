@@ -773,6 +773,116 @@ async function main() {
     });
   }
 
+  // ── 9. Centro Quirúrgico y Monitoreo ASA de Demostración ──
+  console.log('  -> Creando cirugías y monitoreo anestésico transoperatorio...');
+  const countSurgeries = await prisma.surgery.count({
+    where: { branchId: branch.id },
+  });
+  if (countSurgeries === 0) {
+    const surgeryRoom = await prisma.room.findFirst({
+      where: { branchId: branch.id, roomType: 'SURGERY_ROOM' },
+    });
+
+    const surgery1 = await prisma.surgery.create({
+      data: {
+        tenantId: tenant.id,
+        branchId: branch.id,
+        patientId: patient1.id,
+        leadSurgeonId: adminUser.id,
+        anesthesiologistId: adminUser.id,
+        roomId: surgeryRoom?.id || null,
+        surgeryName: 'Corrección de Síndrome Braquicefálico (Estafiloplastia + Rinoplastia)',
+        asaGrade: 'ASA_II',
+        status: 'IN_SURGERY',
+        preOpWeightKg: 14.2,
+        preMedicationProtocol: 'Dexmedetomidina 5 mcg/kg + Metadona 0.2 mg/kg IM',
+        inductionAgent: 'Propofol 4 mg/kg IV lento',
+        maintenanceAgent: 'Isoflurano al 1.5% en O2 al 100%',
+        surgeryStartTime: new Date(Date.now() - 35 * 60 * 1000), // Hace 35 min
+        checklistSignInPassed: true,
+        checklistTimeOutPassed: true,
+        checklistSignOutPassed: false,
+        surgicalFindingsReport: 'Resección de 8 mm de paladar blando elongado mediante técnica de estafiloplastia. Amputación en cuña alar bilateral para corrección de estenosis de narinas. Hemostasia rigurosa con electrobisturí bipolar.',
+      },
+    });
+
+    // Signos vitales minuto a minuto para Rocky en pabellón
+    const sStart = Date.now() - 35 * 60 * 1000;
+    await prisma.surgeryAnesthesiaLog.createMany({
+      data: [
+        {
+          tenantId: tenant.id,
+          surgeryId: surgery1.id,
+          recordedAt: new Date(sStart + 5 * 60 * 1000),
+          heartRateBpm: 124,
+          respiratoryRateBpm: 20,
+          spo2Percent: 97.5,
+          etco2Mmhg: 37,
+          systolicBp: 125,
+          diastolicBp: 78,
+          meanBp: 93,
+          tempCelsius: 38.2,
+          vaporizerPct: 2.0,
+          fluidRateMlHr: 90.0,
+          administeredBolus: 'Cefazolina 22 mg/kg IV (Profilaxis)',
+          notes: 'Inducción e intubación endotraqueal atraumática con tubo Murphy 7.5.',
+        },
+        {
+          tenantId: tenant.id,
+          surgeryId: surgery1.id,
+          recordedAt: new Date(sStart + 15 * 60 * 1000),
+          heartRateBpm: 110,
+          respiratoryRateBpm: 16,
+          spo2Percent: 99.0,
+          etco2Mmhg: 40,
+          systolicBp: 118,
+          diastolicBp: 72,
+          meanBp: 87,
+          tempCelsius: 37.9,
+          vaporizerPct: 1.5,
+          fluidRateMlHr: 90.0,
+          administeredBolus: null,
+          notes: 'Inicio de resección de paladar blando. Plano anestésico quirúrgico óptimo.',
+        },
+        {
+          tenantId: tenant.id,
+          surgeryId: surgery1.id,
+          recordedAt: new Date(sStart + 30 * 60 * 1000),
+          heartRateBpm: 98,
+          respiratoryRateBpm: 14,
+          spo2Percent: 99.0,
+          etco2Mmhg: 39,
+          systolicBp: 110,
+          diastolicBp: 66,
+          meanBp: 80,
+          tempCelsius: 37.5,
+          vaporizerPct: 1.3,
+          fluidRateMlHr: 90.0,
+          administeredBolus: 'Metadona 0.1 mg/kg IV (Refuerzo analgésico)',
+          notes: 'Rinoplastia alar finalizada. Hemostasia completa.',
+        },
+      ],
+    });
+
+    // Cirugía 2: Programada
+    await prisma.surgery.create({
+      data: {
+        tenantId: tenant.id,
+        branchId: branch.id,
+        patientId: patient2.id,
+        leadSurgeonId: adminUser.id,
+        roomId: surgeryRoom?.id || null,
+        surgeryName: 'Profilaxis Dental Ultrasónica y Pulido Coronal',
+        asaGrade: 'ASA_I',
+        status: 'SCHEDULED',
+        preOpWeightKg: 3.85,
+        preMedicationProtocol: 'Butorfanol 0.2 mg/kg + Midazolam 0.2 mg/kg IM',
+        inductionAgent: 'Alfaxalona 2 mg/kg IV',
+        maintenanceAgent: 'Isoflurano al 1.2% en O2',
+      },
+    });
+  }
+
 
   console.log('✅ Siembra de datos completada exitosamente.');
   console.log('----------------------------------------------------');
