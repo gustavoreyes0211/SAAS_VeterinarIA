@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getConsultationById } from "@/lib/actions/consultations";
 import { SafetyBanner } from "@/components/clinical/SafetyBanner";
 import { AddendumSection } from "@/components/clinical/AddendumSection";
+import { serializeData } from "@/lib/utils";
 import {
   ArrowLeft,
   Stethoscope,
@@ -525,7 +526,7 @@ export default async function ConsultationDetailPage({
         consultationId={consultation.id}
         branchCode={branch}
         isClosed={consultation.isClosed}
-        addendums={addendums as any}
+        addendums={serializeData(addendums) as any}
       />
     </div>
   );

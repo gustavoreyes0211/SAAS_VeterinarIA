@@ -1,6 +1,7 @@
 import React from "react";
 import { getPatients } from "@/lib/actions/patients";
 import { PatientTable } from "@/components/patients/PatientTable";
+import { serializeData } from "@/lib/utils";
 import {
   PawPrint,
   HeartPulse,
@@ -110,7 +111,7 @@ export default async function PacientesPage({ params }: PacientesPageProps) {
       </div>
 
       {/* ── TABLA PRINCIPAL DE PACIENTES ── */}
-      <PatientTable initialPatients={patients as any} branchCode={branch} />
+      <PatientTable initialPatients={serializeData(patients) as any} branchCode={branch} />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getClients } from "@/lib/actions/clients";
 import { getBreeds } from "@/lib/actions/patients";
 import { PatientForm } from "@/components/patients/PatientForm";
+import { serializeData } from "@/lib/utils";
 import { ArrowLeft, PawPrint, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -62,8 +63,8 @@ export default async function NuevoPacientePage({
       {/* ── FORMULARIO CLIENTE ── */}
       <PatientForm
         branchCode={branch}
-        clients={clients as any}
-        breeds={breeds as any}
+        clients={serializeData(clients) as any}
+        breeds={serializeData(breeds) as any}
         initialClientId={clientId}
       />
     </div>

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getPatientById } from "@/lib/actions/patients";
 import { SafetyBanner } from "@/components/clinical/SafetyBanner";
 import { PatientEmrTabs } from "@/components/patients/PatientEmrTabs";
+import { serializeData } from "@/lib/utils";
 import {
   ArrowLeft,
   PawPrint,
@@ -210,7 +211,7 @@ export default async function PatientDetailPage({ params }: PatientDetailPagePro
       </div>
 
       {/* ── PESTAÑAS INTERACTIVAS DEL EXPEDIENTE 360° ── */}
-      <PatientEmrTabs patient={patient} branchCode={branch} />
+      <PatientEmrTabs patient={serializeData(patient)} branchCode={branch} />
     </div>
   );
 }

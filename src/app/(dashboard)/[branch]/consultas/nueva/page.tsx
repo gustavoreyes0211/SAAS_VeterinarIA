@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { getPatients } from "@/lib/actions/patients";
 import { SoapForm } from "@/components/clinical/SoapForm";
+import { serializeData } from "@/lib/utils";
 import { ArrowLeft, Stethoscope, Sparkles, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -80,7 +81,7 @@ export default async function NuevaConsultaPage({
       ) : (
         <SoapForm
           branchCode={branch}
-          patients={patients}
+          patients={serializeData(patients)}
           initialPatientId={patientId}
         />
       )}

@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { getConsultations } from "@/lib/actions/consultations";
 import { ConsultationTable } from "@/components/clinical/ConsultationTable";
+import { serializeData } from "@/lib/utils";
 import {
   Stethoscope,
   Plus,
@@ -103,7 +104,7 @@ export default async function ConsultasPage({ params }: ConsultasPageProps) {
       {/* ── TABLA REACTIVA DE CONSULTAS ── */}
       <ConsultationTable
         branchCode={branch}
-        initialConsultations={consultations as any}
+        initialConsultations={serializeData(consultations) as any}
       />
     </div>
   );

@@ -1,6 +1,7 @@
 import React from "react";
 import { getClients } from "@/lib/actions/clients";
 import { ClientTable } from "@/components/clients/ClientTable";
+import { serializeData } from "@/lib/utils";
 import {
   Users,
   PawPrint,
@@ -116,7 +117,7 @@ export default async function ClientesPage({ params }: ClientesPageProps) {
       </div>
 
       {/* ── TABLA PRINCIPAL DE CLIENTES ── */}
-      <ClientTable initialClients={clients as any} branchCode={branch} />
+      <ClientTable initialClients={serializeData(clients) as any} branchCode={branch} />
     </div>
   );
 }
