@@ -22,7 +22,7 @@ body {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   ESTILOS PREMIUM PARA MODO DÍA (LIGHT MODE)
+   ESTILOS PREMIUM PARA MODO DÍA (LIGHT MODE) - ALTO CONTRASTE Y LEGIBILIDAD
    ══════════════════════════════════════════════════════════════════════════════ */
 
 html.light,
@@ -37,7 +37,7 @@ html[data-theme="light"] body {
   color: #0f172a !important;
 }
 
-/* Sidebar en Modo Claro */
+/* ── ESTRUCTURA GLOBAL (SIDEBAR, HEADER, MAIN) ── */
 html.light aside,
 html[data-theme="light"] aside {
   background-color: #ffffff !important;
@@ -45,88 +45,370 @@ html[data-theme="light"] aside {
   color: #0f172a !important;
 }
 
-/* Header en Modo Claro */
 html.light header,
 html[data-theme="light"] header {
-  background-color: rgba(255, 255, 255, 0.95) !important;
+  background-color: rgba(255, 255, 255, 0.96) !important;
   border-color: #e2e8f0 !important;
   color: #0f172a !important;
 }
 
-/* Contenedor principal de páginas en Modo Claro */
 html.light main,
 html[data-theme="light"] main {
   background: #f8fafc !important;
   color: #0f172a !important;
 }
 
-/* Tarjetas y superficies de contenido */
+/* ── SUPERFICIES, TARJETAS Y CONTENEDORES ── */
+html.light .bg-slate-900,
+html.light .bg-slate-900\/90,
 html.light .bg-slate-900\/80,
 html.light .bg-slate-900\/70,
 html.light .bg-slate-900\/60,
 html.light .bg-slate-900\/50,
 html.light .bg-slate-900\/40,
 html.light .bg-slate-900\/30,
-html.light .bg-slate-900,
+html[data-theme="light"] .bg-slate-900,
+html[data-theme="light"] .bg-slate-900\/90,
 html[data-theme="light"] .bg-slate-900\/80,
 html[data-theme="light"] .bg-slate-900\/70,
 html[data-theme="light"] .bg-slate-900\/60,
 html[data-theme="light"] .bg-slate-900\/50,
 html[data-theme="light"] .bg-slate-900\/40,
-html[data-theme="light"] .bg-slate-900\/30,
-html[data-theme="light"] .bg-slate-900 {
+html[data-theme="light"] .bg-slate-900\/30 {
   background-color: #ffffff !important;
   border-color: #e2e8f0 !important;
   box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.03) !important;
 }
 
-/* Sub-paneles y áreas internas */
+/* Sub-paneles internos y cajas de valores */
+html.light .bg-slate-950,
+html.light .bg-slate-950\/90,
+html.light .bg-slate-950\/80,
+html.light .bg-slate-950\/70,
 html.light .bg-slate-950\/60,
 html.light .bg-slate-950\/50,
 html.light .bg-slate-950\/40,
-html.light .bg-slate-950,
+html[data-theme="light"] .bg-slate-950,
+html[data-theme="light"] .bg-slate-950\/90,
+html[data-theme="light"] .bg-slate-950\/80,
+html[data-theme="light"] .bg-slate-950\/70,
 html[data-theme="light"] .bg-slate-950\/60,
 html[data-theme="light"] .bg-slate-950\/50,
-html[data-theme="light"] .bg-slate-950\/40,
-html[data-theme="light"] .bg-slate-950 {
-  background-color: #f1f5f9 !important;
+html[data-theme="light"] .bg-slate-950\/40 {
+  background-color: #f8fafc !important;
   border-color: #e2e8f0 !important;
 }
 
-/* Tipografía y Textos en Modo Claro */
+/* Modales y Diálogos Radix */
+html.light [role="dialog"],
+html.light [data-state="open"] > .bg-slate-900,
+html[data-theme="light"] [role="dialog"],
+html[data-theme="light"] [data-state="open"] > .bg-slate-900 {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+}
+
+/* ── BORDES EN MODO CLARO ── */
+html.light .border-slate-800,
+html.light .border-slate-800\/80,
+html.light .border-slate-800\/60,
+html.light .border-slate-700,
+html.light .border-slate-700\/80,
+html.light .border-slate-700\/60,
+html[data-theme="light"] .border-slate-800,
+html[data-theme="light"] .border-slate-800\/80,
+html[data-theme="light"] .border-slate-800\/60,
+html[data-theme="light"] .border-slate-700,
+html[data-theme="light"] .border-slate-700\/80,
+html[data-theme="light"] .border-slate-700\/60 {
+  border-color: #e2e8f0 !important;
+}
+
+/* ── JERARQUÍA TIPOGRÁFICA DE ALTO CONTRASTE ── */
 html.light h1,
 html.light h2,
 html.light h3,
 html.light h4,
+html.light h5,
+html.light h6,
 html[data-theme="light"] h1,
 html[data-theme="light"] h2,
 html[data-theme="light"] h3,
-html[data-theme="light"] h4 {
+html[data-theme="light"] h4,
+html[data-theme="light"] h5,
+html[data-theme="light"] h6 {
   color: #0f172a !important;
 }
 
-/* Texto blanco dentro de tarjetas/contenedores (excepto botones con color primario) */
-html.light :not(button):not(button *):not(a.bg-emerald-600):not(a.bg-emerald-600 *):not(a.bg-rose-600):not(a.bg-rose-600 *):not(a.bg-indigo-600):not(a.bg-indigo-600 *):not([class*="bg-emerald-600"]):not([class*="bg-rose-600"]):not([class*="bg-indigo-600"]).text-white,
-html[data-theme="light"] :not(button):not(button *):not(a.bg-emerald-600):not(a.bg-emerald-600 *):not(a.bg-rose-600):not(a.bg-rose-600 *):not(a.bg-indigo-600):not(a.bg-indigo-600 *):not([class*="bg-emerald-600"]):not([class*="bg-rose-600"]):not([class*="bg-indigo-600"]).text-white {
+/* Textos blancos que deben ser oscuros en Modo Claro (títulos, nombres, valores numéricos) */
+html.light .text-white,
+html[data-theme="light"] .text-white {
   color: #0f172a !important;
 }
 
-html.light .text-slate-400,
-html[data-theme="light"] .text-slate-400 {
-  color: #64748b !important;
+/* PRESERVAR texto blanco en botones y badges primarios de color sólido */
+html.light button.bg-emerald-600,
+html.light button.bg-emerald-600 *,
+html.light a.bg-emerald-600,
+html.light a.bg-emerald-600 *,
+html.light .bg-emerald-600,
+html.light .bg-emerald-600 *,
+html.light button.bg-rose-600,
+html.light button.bg-rose-600 *,
+html.light a.bg-rose-600,
+html.light a.bg-rose-600 *,
+html.light .bg-rose-600,
+html.light .bg-rose-600 *,
+html.light .bg-red-600,
+html.light .bg-red-600 *,
+html.light .bg-amber-600,
+html.light .bg-amber-600 *,
+html.light button.bg-primary,
+html.light button.bg-primary *,
+html.light a.bg-primary,
+html.light a.bg-primary *,
+html[data-theme="light"] button.bg-emerald-600,
+html[data-theme="light"] button.bg-emerald-600 *,
+html[data-theme="light"] a.bg-emerald-600,
+html[data-theme="light"] a.bg-emerald-600 *,
+html[data-theme="light"] .bg-emerald-600,
+html[data-theme="light"] .bg-emerald-600 *,
+html[data-theme="light"] button.bg-rose-600,
+html[data-theme="light"] button.bg-rose-600 *,
+html[data-theme="light"] a.bg-rose-600,
+html[data-theme="light"] a.bg-rose-600 *,
+html[data-theme="light"] .bg-rose-600,
+html[data-theme="light"] .bg-rose-600 *,
+html[data-theme="light"] .bg-red-600,
+html[data-theme="light"] .bg-red-600 *,
+html[data-theme="light"] .bg-amber-600,
+html[data-theme="light"] .bg-amber-600 *,
+html[data-theme="light"] button.bg-primary,
+html[data-theme="light"] button.bg-primary *,
+html[data-theme="light"] a.bg-primary,
+html[data-theme="light"] a.bg-primary * {
+  color: #ffffff !important;
 }
 
-html.light .text-slate-300,
-html[data-theme="light"] .text-slate-300 {
-  color: #334155 !important;
+/* Escala de texto Slate para Modo Claro */
+html.light .text-slate-100,
+html[data-theme="light"] .text-slate-100 {
+  color: #0f172a !important;
 }
 
 html.light .text-slate-200,
 html[data-theme="light"] .text-slate-200 {
-  color: #1e293b !important;
+  color: #1e293b !important; /* slate-800: máxima legibilidad */
 }
 
-/* Inputs, Selects y Textareas */
+html.light .text-slate-300,
+html[data-theme="light"] .text-slate-300 {
+  color: #334155 !important; /* slate-700: texto de cuerpo nítido */
+}
+
+html.light .text-slate-400,
+html[data-theme="light"] .text-slate-400 {
+  color: #475569 !important; /* slate-600: subtítulos y labels con alto contraste */
+}
+
+html.light .text-slate-500,
+html[data-theme="light"] .text-slate-500 {
+  color: #64748b !important; /* slate-500 */
+}
+
+/* ── ACENTOS CROMÁTICOS DE ALTO CONTRASTE (WCAG AA) ── */
+/* Esmeralda / Salud */
+html.light .text-emerald-300,
+html.light .text-emerald-400,
+html[data-theme="light"] .text-emerald-300,
+html[data-theme="light"] .text-emerald-400 {
+  color: #047857 !important; /* emerald-700 */
+}
+
+/* Ámbar / Precaución */
+html.light .text-amber-200,
+html.light .text-amber-300,
+html.light .text-amber-400,
+html[data-theme="light"] .text-amber-200,
+html[data-theme="light"] .text-amber-300,
+html[data-theme="light"] .text-amber-400 {
+  color: #92400e !important; /* amber-800 */
+}
+
+/* Rojo / Alerta / Alergias */
+html.light .text-rose-200,
+html.light .text-rose-300,
+html.light .text-rose-400,
+html.light .text-red-200,
+html.light .text-red-300,
+html.light .text-red-400,
+html[data-theme="light"] .text-rose-200,
+html[data-theme="light"] .text-rose-300,
+html[data-theme="light"] .text-rose-400,
+html[data-theme="light"] .text-red-200,
+html[data-theme="light"] .text-red-300,
+html[data-theme="light"] .text-red-400 {
+  color: #b91c1c !important; /* red-700 */
+}
+
+/* Cian / Azul / Diagnóstico */
+html.light .text-cyan-200,
+html.light .text-cyan-300,
+html.light .text-cyan-400,
+html.light .text-sky-200,
+html.light .text-sky-300,
+html.light .text-sky-400,
+html.light .text-blue-200,
+html[data-theme="light"] .text-cyan-200,
+html[data-theme="light"] .text-cyan-300,
+html[data-theme="light"] .text-cyan-400,
+html[data-theme="light"] .text-sky-200,
+html[data-theme="light"] .text-sky-300,
+html[data-theme="light"] .text-sky-400,
+html[data-theme="light"] .text-blue-200 {
+  color: #0369a1 !important; /* sky-700 */
+}
+
+/* Teal / Respiratorio */
+html.light .text-teal-300,
+html.light .text-teal-400,
+html[data-theme="light"] .text-teal-300,
+html[data-theme="light"] .text-teal-400 {
+  color: #0f766e !important; /* teal-700 */
+}
+
+/* Púrpura / Plan / Especialidad */
+html.light .text-purple-200,
+html.light .text-purple-300,
+html.light .text-purple-400,
+html[data-theme="light"] .text-purple-200,
+html[data-theme="light"] .text-purple-300,
+html[data-theme="light"] .text-purple-400 {
+  color: #6b21a8 !important; /* purple-800 */
+}
+
+/* Índigo / Legal / Adendas */
+html.light .text-indigo-300,
+html.light .text-indigo-400,
+html[data-theme="light"] .text-indigo-300,
+html[data-theme="light"] .text-indigo-400 {
+  color: #4338ca !important; /* indigo-700 */
+}
+
+/* ── BADGES, PILLS Y FONDOS DE ESTADO EN MODO CLARO ── */
+/* Badges Esmeralda (Cerradas, Normal, Dócil, Fármacos) */
+html.light .bg-emerald-950\/20,
+html.light .bg-emerald-950\/40,
+html.light .bg-emerald-950\/50,
+html.light .bg-emerald-950\/60,
+html.light .bg-emerald-500\/10,
+html.light .bg-emerald-500\/15,
+html.light .bg-emerald-500\/20,
+html[data-theme="light"] .bg-emerald-950\/20,
+html[data-theme="light"] .bg-emerald-950\/40,
+html[data-theme="light"] .bg-emerald-950\/50,
+html[data-theme="light"] .bg-emerald-950\/60,
+html[data-theme="light"] .bg-emerald-500\/10,
+html[data-theme="light"] .bg-emerald-500\/15,
+html[data-theme="light"] .bg-emerald-500\/20 {
+  background-color: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+}
+
+/* Badges Ámbar (Abiertas, Hallazgos, Fractioso, VIP) */
+html.light .bg-amber-950\/20,
+html.light .bg-amber-950\/40,
+html.light .bg-amber-950\/50,
+html.light .bg-amber-500\/10,
+html.light .bg-amber-500\/20,
+html.light .bg-amber-500\/30,
+html[data-theme="light"] .bg-amber-950\/20,
+html[data-theme="light"] .bg-amber-950\/40,
+html[data-theme="light"] .bg-amber-950\/50,
+html[data-theme="light"] .bg-amber-500\/10,
+html[data-theme="light"] .bg-amber-500\/20,
+html[data-theme="light"] .bg-amber-500\/30 {
+  background-color: #fffbeb !important;
+  border-color: #fde68a !important;
+}
+
+/* Badges Rojo / Rosa (Urgencia, Bozal, Alergias, Moroso) */
+html.light .bg-rose-950\/20,
+html.light .bg-rose-950\/30,
+html.light .bg-rose-950\/40,
+html.light .bg-rose-500\/10,
+html.light .bg-rose-500\/20,
+html.light .bg-rose-500\/30,
+html.light .bg-red-600\/30,
+html[data-theme="light"] .bg-rose-950\/20,
+html[data-theme="light"] .bg-rose-950\/30,
+html[data-theme="light"] .bg-rose-950\/40,
+html[data-theme="light"] .bg-rose-500\/10,
+html[data-theme="light"] .bg-rose-500\/20,
+html[data-theme="light"] .bg-rose-500\/30,
+html[data-theme="light"] .bg-red-600\/30 {
+  background-color: #fef2f2 !important;
+  border-color: #fecaca !important;
+}
+
+/* Badges Azul / Cian / Sky (Recetas, Laboratorio, Frecuente) */
+html.light .bg-sky-500\/10,
+html.light .bg-sky-500\/20,
+html.light .bg-cyan-500\/10,
+html.light .bg-cyan-500\/20,
+html.light .bg-blue-500\/20,
+html[data-theme="light"] .bg-sky-500\/10,
+html[data-theme="light"] .bg-sky-500\/20,
+html[data-theme="light"] .bg-cyan-500\/10,
+html[data-theme="light"] .bg-cyan-500\/20,
+html[data-theme="light"] .bg-blue-500\/20 {
+  background-color: #f0f9ff !important;
+  border-color: #bae6fd !important;
+}
+
+/* Badges Púrpura (Imagenología, Refugio, Cardiópata) */
+html.light .bg-purple-500\/10,
+html.light .bg-purple-500\/20,
+html.light .bg-purple-500\/30,
+html[data-theme="light"] .bg-purple-500\/10,
+html[data-theme="light"] .bg-purple-500\/20,
+html[data-theme="light"] .bg-purple-500\/30 {
+  background-color: #faf5ff !important;
+  border-color: #e9d5ff !important;
+}
+
+/* Badges Neutros (Chips, Sexo, Dócil, Estándar) */
+html.light .bg-slate-800,
+html.light .bg-slate-800\/80,
+html.light .bg-slate-800\/60,
+html.light .bg-slate-800\/50,
+html[data-theme="light"] .bg-slate-800,
+html[data-theme="light"] .bg-slate-800\/80,
+html[data-theme="light"] .bg-slate-800\/60,
+html[data-theme="light"] .bg-slate-800\/50 {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+/* SafetyBanner Gradientes */
+html.light [class*="from-red-950"],
+html[data-theme="light"] [class*="from-red-950"] {
+  background: #fef2f2 !important;
+  border-color: #f87171 !important;
+  box-shadow: 0 4px 6px -1px rgb(239 68 68 / 0.1) !important;
+}
+
+html.light [class*="from-amber-950"],
+html[data-theme="light"] [class*="from-amber-950"] {
+  background: #fffbeb !important;
+  border-color: #fbbf24 !important;
+  box-shadow: 0 4px 6px -1px rgb(245 158 11 / 0.1) !important;
+}
+
+/* ── INPUTS, SELECTS Y TEXTAREAS ── */
 html.light input:not([type="checkbox"]):not([type="radio"]),
 html.light select,
 html.light textarea,
@@ -145,24 +427,91 @@ html[data-theme="light"] textarea::placeholder {
   color: #94a3b8 !important;
 }
 
-/* Bordes en Modo Claro */
-html.light .border-slate-800,
-html.light .border-slate-800\/80,
-html.light .border-slate-800\/60,
-html[data-theme="light"] .border-slate-800,
-html[data-theme="light"] .border-slate-800\/80,
-html[data-theme="light"] .border-slate-800\/60 {
-  border-color: #e2e8f0 !important;
-}
-
-/* Tablas en Modo Claro */
+/* ── TABLAS Y RESULTADOS ── */
 html.light thead,
 html[data-theme="light"] thead {
   background-color: #f1f5f9 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  color: #334155 !important;
+}
+
+html.light thead th,
+html[data-theme="light"] thead th {
+  color: #334155 !important;
+  font-weight: 700 !important;
+}
+
+html.light tbody tr,
+html[data-theme="light"] tbody tr {
+  border-color: #e2e8f0 !important;
+}
+
+html.light tbody tr:hover,
+html[data-theme="light"] tbody tr:hover {
+  background-color: #f8fafc !important;
+}
+
+/* ── HOVER Y ELEMENTOS INTERACTIVOS (PREVENIR TEXTO INVISIBLE) ── */
+/* Evitar que texto cambie a blanco en hover dentro de botones ghost o filas */
+html.light a:hover:not(.bg-emerald-600):not(.bg-rose-600):not(.bg-red-600),
+html.light button:hover:not(.bg-emerald-600):not(.bg-rose-600):not(.bg-red-600),
+html[data-theme="light"] a:hover:not(.bg-emerald-600):not(.bg-rose-600):not(.bg-red-600),
+html[data-theme="light"] button:hover:not(.bg-emerald-600):not(.bg-rose-600):not(.bg-red-600) {
+  color: #0f172a;
+}
+
+/* Fondos hover oscuros convertidos a grises suaves en modo claro */
+html.light *:hover[class*="hover:bg-slate-800"],
+html.light *:hover[class*="hover:bg-slate-700"],
+html.light .group:hover [class*="group-hover:bg-slate-800"],
+html.light .group:hover [class*="group-hover:bg-slate-700"],
+html[data-theme="light"] *:hover[class*="hover:bg-slate-800"],
+html[data-theme="light"] *:hover[class*="hover:bg-slate-700"],
+html[data-theme="light"] .group:hover [class*="group-hover:bg-slate-800"],
+html[data-theme="light"] .group:hover [class*="group-hover:bg-slate-700"] {
+  background-color: #f1f5f9 !important;
+}
+
+html.light .group:hover [class*="group-hover:text-white"],
+html.light .group:hover [class*="group-hover:text-slate-200"],
+html[data-theme="light"] .group:hover [class*="group-hover:text-white"],
+html[data-theme="light"] .group:hover [class*="group-hover:text-slate-200"] {
+  color: #0f172a !important;
+}
+
+/* Banner de Bienvenida y Gradientes en Modo Claro */
+html.light [class*="to-emerald-950"],
+html[data-theme="light"] [class*="to-emerald-950"] {
+  background: linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%) !important;
+  border-color: #a7f3d0 !important;
+}
+
+/* Header Botones de Utilidad en Modo Claro */
+html.light header button,
+html[data-theme="light"] header button {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
   color: #475569 !important;
 }
 
-html.light tr:hover,
-html[data-theme="light"] tr:hover {
-  background-color: #f8fafc !important;
+html.light header button:hover,
+html[data-theme="light"] header button:hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
 }
+
+/* Sidebar en Modo Claro */
+html.light aside a:hover,
+html.light aside button:hover,
+html[data-theme="light"] aside a:hover,
+html[data-theme="light"] aside button:hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+html.light aside .uppercase,
+html[data-theme="light"] aside .uppercase {
+  color: #475569 !important;
+  font-weight: 700 !important;
+}
+
