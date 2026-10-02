@@ -45,8 +45,8 @@ export function LoginForm() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "dra.andrea@hospitalvet.sv",
-      password: "password123",
+      email: "admin@veterinaria.com",
+      password: "Password123!",
       rememberMe: true,
     },
   });
@@ -55,16 +55,10 @@ export function LoginForm() {
     setIsLoading(true);
     setErrorMessage(null);
 
-    // Simulación de autenticación profesional
     setTimeout(() => {
       setIsLoading(false);
-      // Simular requerimiento de 2FA para roles médicos/administrativos
-      if (data.email.includes("hospitalvet.sv")) {
-        setRequiresTwoFactor(true);
-      } else {
-        window.location.href = "/central/dashboard";
-      }
-    }, 1000);
+      window.location.href = "/central/dashboard";
+    }, 600);
   };
 
   const handleVerify2FA = (e: React.FormEvent) => {
@@ -77,21 +71,13 @@ export function LoginForm() {
     setTimeout(() => {
       setIsLoading(false);
       window.location.href = "/central/dashboard";
-    }, 800);
+    }, 600);
   };
 
   // Botones de acceso rápido para pruebas
   const setDemoRole = (role: "doctor" | "director" | "reception") => {
-    if (role === "doctor") {
-      setValue("email", "dra.andrea@hospitalvet.sv");
-      setValue("password", "doctor2026!");
-    } else if (role === "director") {
-      setValue("email", "director.general@hospitalvet.sv");
-      setValue("password", "admin2026!");
-    } else {
-      setValue("email", "recepcion.central@hospitalvet.sv");
-      setValue("password", "caja2026!");
-    }
+    setValue("email", "admin@veterinaria.com");
+    setValue("password", "Password123!");
   };
 
   return (
